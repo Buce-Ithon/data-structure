@@ -33,6 +33,7 @@ CMakeUserPresets.json
 *.dll
 *.pdb
 *.ilk
+compile_commands.json
 
 # =====================================
 # 3. Editor and IDE Configuration Files

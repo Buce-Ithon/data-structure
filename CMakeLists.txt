@@ -22,9 +22,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Warnning options
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     # C++
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wall -Wextra -Wpedantic -Wshadow -Wconversion>)
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:CXX>:-Wall>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wextra>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wpedantic>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wshadow>
+        $<$<COMPILE_LANGUAGE:CXX>:-Wconversion>
+    )
     # C
-    add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wstrict-prototypes>)
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:C>:-Wall>
+        $<$<COMPILE_LANGUAGE:C>:-Wextra>
+        $<$<COMPILE_LANGUAGE:C>:-Wpedantic>
+        $<$<COMPILE_LANGUAGE:C>:-Wshadow>
+        $<$<COMPILE_LANGUAGE:C>:-Wconversion>
+        $<$<COMPILE_LANGUAGE:C>:-Wstrict-prototypes>
+    )
 elseif(MSVC)
     add_compile_options(/W4 /WX-)
 endif()
@@ -68,11 +81,11 @@ file(GLOB_RECURSE ALL_SOURCES
 foreach(source_file IN LISTS ALL_SOURCES)
     # Get the filename (excluding path and extension) as the name of the executable
     # Get the file extension, to distinguish files in the log
-    get_filename_component(exe_name ${source_file} NAME_WE)
-    get_filename_component(file_ext ${source_file} EXT)
+    get_filename_component(exe_name "${source_file}" NAME_WE)
+    get_filename_component(file_ext "${source_file}" EXT)
     # Add compilation targets
-    add_executable(${exe_name}${source_file})
+    add_executable("${exe_name}""${source_file}")
     # Print log
-    file(RELATIVE_PATH relative_src "${CMAKE_CURRENT_SOURCE_DIR}" ${source_file})
+    file(RELATIVE_PATH relative_src "${CMAKE_CURRENT_SOURCE_DIR}" "${source_file}")
     message(STATUS "Found source: src/${exe_name}${file_ext} -> Target: ${exe_name}")
 endforeach()

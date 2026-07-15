@@ -1,0 +1,60 @@
+# ========================================================
+# 1. CMake Build and Install Directories (Presets Support)
+# ========================================================
+# Ignore all build and install output directories defined in CMakePresets.json
+/build/
+/install/
+/out/
+
+# Ignore traditional/non-Preset default build directories
+[Bb]uild/
+
+# Ignore compilation database and local CMake cache
+cmake-build-*/
+.cmake/
+# Uncomment the line below if you do not want to commit clangd auto-generated index folders
+# .clangd/
+
+# Ignore user-specific local CMake presets (keeps the public CMakePresets.json)
+CMakeUserPresets.json
+
+# =============================================================
+# 2. Compiler and Linker Outputs (Windows / GCC / Clang / MSVC)
+# =============================================================
+*.exe
+*.elf
+*.bin
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.pdb
+*.ilk
+
+# =====================================
+# 3. Editor and IDE Configuration Files
+# =====================================
+# Vim / Neovim temporary files
+*~
+*.swp
+*.swo
+.netrwhist
+
+# VS Code user-specific configurations
+.vscode/
+
+# Visual Studio temporary files
+.vs/
+
+# CLion / IntelliJ project files
+.idea/
+
+# =========================
+# 4. System Temporary Files
+# =========================
+Thumbs.db
+ehthumbs.db
+Desktop.ini

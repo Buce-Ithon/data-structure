@@ -59,7 +59,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 # 4. Automated scanning and building targets
 # ==========================================
 # Scan all .c and .cpp files in ./src/
-file(GLOB ALL_SOURCES 
+file(GLOB_RECURSE ALL_SOURCES 
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
@@ -67,11 +67,12 @@ file(GLOB ALL_SOURCES
 # Circularly compile every source file, including the new
 foreach(source_file IN LISTS ALL_SOURCES)
     # Get the filename (excluding path and extension) as the name of the executable
-    get_filename_component(exe_name ${source_file} NAME_WE)
     # Get the file extension, to distinguish files in the log
+    get_filename_component(exe_name ${source_file} NAME_WE)
     get_filename_component(file_ext ${source_file} EXT)
     # Add compilation targets
-    add_executable(${exe_name} ${source_file})
+    add_executable(${exe_name}${source_file})
     # Print log
+    file(RELATIVE_PATH relative_src "${CMAKE_CURRENT_SOURCE_DIR}" ${source_file})
     message(STATUS "Found source: src/${exe_name}${file_ext} -> Target: ${exe_name}")
 endforeach()

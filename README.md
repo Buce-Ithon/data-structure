@@ -12,12 +12,23 @@ This repository is designed to manage and compile course experiments and exercis
 DataStructures/
 ├── CMakeLists.txt         # Core build configuration
 ├── CMakePresets.json      # Pre-configured build/configure environments
+├── .gitignore             # Git ignore rules
+├── LICENSE                # Project license
+├── README.md              # Project documentation
 ├── include/               # Custom header files (.h / .hpp)
 ├── ref/                   # Reference materials, lecture notes, or PDFs
-└── src/                   # C/C++ source files for your exercises
-    ├── 01_seq_list.c      # Example C implementation
-    └── 02_link_list.cpp   # Example C++ implementation
+└── src/                   # Source files organized by chapters
+    ├── ch1/               # Chapter 1 Exercises
+    │   └── ch1_seq_list.c
+    └── ch2/               # Chapter 2 Exercises
+        └── ch2_link_list.cpp
 ```
+
+> A friendly reminder about potential naming conflicts: 
+> 
+> When using this automatic compilation mechanism, ensure that filenames in different chapter directories are not duplicated.
+> 
+> For example: If you write code in both `src/ch1/main.cpp` and `src/ch2/main.cpp`, the generated targets will both be named `main`, which will cause a CMake conflict error. It is recommended to give each experimental file a unique name, such as `ch1_seq_list.cpp` and `ch2_link_list.cpp`.
 
 # Build commands
 Since this project utilizes CMake Presets, you can configure and build the project using the simplified preset names without manually specifying generators or build directories.
@@ -79,12 +90,12 @@ cmake --build --preset msvc-release
 ```
 
 ## Compiling & Running a Specific Exercise
-To avoid rebuilding the entire project, you can compile a single target (the filename without the extension) by using the `--target` flag:
+To avoid rebuilding the entire project, you can compile a single target (the filename without the extension) by using the `--target` flag.
 
-```Bash
-# Example: Compile only the '02_link_list' target
-cmake --build --preset ninja-debug --target 02_link_list
+```bash
+# Example: Compile only 'link_list' (located in src/ch2/ch2_link_list.cpp)
+cmake --build --preset ninja-debug --target ch2_link_list
 
-# Run the compiled executable (located in the corresponding build folder)
-./build/ninja/debug/02_link_list.exe
+# Run the compiled executable
+./build/ninja/debug/link_list.exe
 ```

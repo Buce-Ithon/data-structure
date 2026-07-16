@@ -10,6 +10,7 @@
 [Bb]uild/
 
 # Ignore compilation database and local CMake cache
+/.cache/
 cmake-build-*/
 .cmake/
 # Uncomment the line below if you do not want to commit clangd auto-generated index folders

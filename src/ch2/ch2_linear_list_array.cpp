@@ -55,6 +55,25 @@ void Reverse(SqList &L) {
 
 }
 
+/**
+ * @brief Application Q3: Delete all elements with value x from the sequential list.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param L Reference to the sequential list
+ * @param x The target value to be deleted
+ */
+void DeleteAllX(SqList &L, ElemType x) {
+    int k = 0; // Index for elements not equal to x
+    // Traverse the list
+    for (int i = 0; i < L.length; i++) {
+        if (L.data[i] != x) {
+            L.data[k] = L.data[i];
+            k++; // Move the slow pointer forward
+        }
+    }
+    // Update the final length of the list
+    L.length = k;
+}
+
 int main() {
     std::cout << "Hello, linear list!" << "\n";
 
@@ -87,10 +106,23 @@ int main() {
     // Application Q2
     Reverse(L);
     std::cout << "Reversed list: ";
-    PrintList(L);
+    PrintList(L);        // Expected output: [ 25 20 10 25 ]
     Reverse(L);
     std::cout << "Reversed list: ";
-    PrintList(L);
+    PrintList(L);        // Expected output: [ 25 10 20 25 ]
+    
+    // Application Q3
+    int x{10};
+    DeleteAllX(L, x);
+    std::cout << "Delete All x = " << x << ", then list is: ";
+    PrintList(L);        // Expected output: [ 25 20 25 ]
+    ListInsert(L, 2, x);
+    x = 25;
+    DeleteAllX(L, x); // Restore L: [25 10 20 25]
+    std::cout << "Delete All x = " << x << ", then list is: ";
+    PrintList(L);        // Expected output: [ 10 20 ]
+    ListInsert(L, 1, x);
+    ListInsert(L, L.length, x); // Restore L: [25 10 20 25]
 
     return 0;
 }

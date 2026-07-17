@@ -1,5 +1,6 @@
 #include <iostream>
 #include <linear_list_array.h>
+#include <cstdlib>
 #include <ostream>
 
 /**
@@ -74,6 +75,85 @@ void DeleteAllX(SqList &L, ElemType x) {
     L.length = k;
 }
 
+/**
+ * @brief Application Q4: Delete elements in range [s, t].
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param L Reference to the sequential list
+ * @param s Lower bound (inclusive)
+ * @param t Upper bound (inclusive)
+ */
+void Del_Range(SqList &L, ElemType s, ElemType t) {
+    // 1. Error handling: empty list or invalid range
+    if (L.length == 0 || s >= t) {
+        std::cerr << "Error: Invalid range (s >= t) or empty list!" << std::endl;
+        exit(EXIT_FAILURE); // Display error and terminate execution
+    }
+    int k = 0; // Index for valid elements
+    // 2. Iterate and keep only elements outside [s, t]
+    for (int i = 0; i < L.length; i++) {
+        if (L.data[i] < s || L.data[i] > t) {
+            L.data[k] = L.data[i];
+            k++;
+        }
+    }
+    // Update the final length of the list
+    L.length = k;
+}
+
+/**
+ * @brief Application Q5: Delete duplicate elements from a SORTED sequential list.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param L Reference to the sorted sequential list
+ * @return True if successful, false otherwise
+ */
+bool Del_Same(SqList &L) {
+    if (L.length == 0) {
+        return false;
+    }
+    int k = 0;// Index for the last unique element found
+    // Iterate through the list starting from the second element
+    for (int i = 1; i < L.length; i++) {
+        if (L.data[i] != L.data[k]) {
+            k++;
+            L.data[k] = L.data[i];
+        }
+    }
+    // Update the final length of the list
+    L.length = k+1;
+    return true;
+}
+
+/**
+ * @brief Application Q6: Merge two sorted sequential lists into a new sorted list.
+ *        Time Complexity: O(L1.length + L2.length), Space Complexity: O(L1.length + L2.length)
+ * @param L1 The first sorted sequential list
+ * @param L2 The second sorted sequential list
+ * @param result Reference to the sequential list that stores the merged result
+ * @return True if merge is successful, false if the combined size exceeds MaxSize
+ */
+bool Merge(SqList &L1, SqList &L2, SqList &result) {
+    // Check if the total combined size exceeds the maximum capacity of SqList
+    if (L1.length + L2.length > MaxSize) return false;
+    int i = 0; // Pointer for L1
+    int j = 0; // Pointer for L2
+    int k = 0; // Pointer for result
+    // 1. Compare and merge elements from both lists until one is exhausted
+    while (i < L1.length && j < L2.length) {
+        if (L1.data[i] < L2.data[j]) {
+            result.data[k++] = L1.data[i++];
+        } else {
+            result.data[k++] = L2.data[j++];
+        }
+    }
+    // 2. Copy the remaining elements of L1, if any
+    while (i < L1.length) result.data[k++] = L1.data[i++];
+    // 2. Copy the remaining elements of L2, if any
+    while (j < L2.length) result.data[k++] = L2.data[j++];
+    // 4. Update the final length of the merged list
+    result.length = k;
+    return true;
+}
+
 int main() {
     std::cout << "Hello, linear list!" << "\n";
 
@@ -98,12 +178,14 @@ int main() {
     PrintList(L);        // Expected output: [ 1 10 20 25 ]
     
     // Application Q1
+    std::cout << "===== Application Q1 =====" << std::endl;
     int del_minValue;
     Del_Min(L, del_minValue);
     std::cout << "Deleted minimal value: " << del_minValue << std::endl;
     PrintList(L);        // Expected output: [ 25 10 20 25 ]
 
     // Application Q2
+    std::cout << "===== Application Q2 =====" << std::endl;
     Reverse(L);
     std::cout << "Reversed list: ";
     PrintList(L);        // Expected output: [ 25 20 10 25 ]
@@ -112,6 +194,7 @@ int main() {
     PrintList(L);        // Expected output: [ 25 10 20 25 ]
     
     // Application Q3
+    std::cout << "===== Application Q3 =====" << std::endl;
     int x{10};
     DeleteAllX(L, x);
     std::cout << "Delete All x = " << x << ", then list is: ";
@@ -122,7 +205,57 @@ int main() {
     std::cout << "Delete All x = " << x << ", then list is: ";
     PrintList(L);        // Expected output: [ 10 20 ]
     ListInsert(L, 1, x);
-    ListInsert(L, L.length, x); // Restore L: [25 10 20 25]
+    ListInsert(L, L.length + 1, x); // Restore L: [25 10 20 25]
+    
+    // Application Q4
+    std::cout << "===== Application Q4 =====" << std::endl;
+    std::cout << "Now list is: ";
+    PrintList(L);
+    Del_Range(L, 10, 20);
+    std::cout << "Delete All x in [10, 20], then list is: ";
+    PrintList(L);
+    
+    // Application Q5
+    std::cout << "===== Application Q5 =====" << std::endl;
+    // Re-initialize the SqList L
+    for (int i = 0; i < 10; i++) {
+        L.data[i] = (i/2 + 1) * 10;
+        L.length = 10;
+    }
+    std::cout << "Now list is: ";
+    PrintList(L); // Excepted output: [ 10 10 20 20 30 30 40 40 50 50]
+    Del_Same(L);
+    std::cout << "Delete All same x in L, then list is: ";
+    PrintList(L);
+    
+    // Application Q6
+    std::cout << "===== Application Q6 =====" << std::endl;
+    SqList L1, L2, result;
+    InitList(L1);
+    InitList(L2);
+    InitList(result);
+
+    // Prepare L1: [ 1, 3, 5, 7 ]
+    for (int i = 0; i < 4; i++) {
+        ListInsert(L1, i + 1, 2 * i + 1);
+    }
+
+    // Prepare L2: [ 2, 4, 6, 8, 10 ]
+    for (int j = 0; j < 5; j++) {
+        ListInsert(L2, j + 1, 2 * (j + 1));
+    }
+
+    std::cout << "List 1: ";
+    PrintList(L1); // Expected: [ 1 3 5 7 ]
+    std::cout << "List 2: ";
+    PrintList(L2); // Expected: [ 2 4 6 8 10 ]
+    // Merge L1 and L2
+    if (Merge(L1, L2, result)) {
+        std::cout << "Merged List: ";
+        PrintList(result); // Expected: [ 1 2 3 4 5 6 7 8 10 ]
+    } else {
+        std::cerr << "Error: Merged size exceeds max capacity." << std::endl;
+    }
 
     return 0;
 }

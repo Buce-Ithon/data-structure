@@ -2,6 +2,7 @@
 #include <linear_list_array.h>
 #include <cstdlib>
 #include <ostream>
+#include <utility>
 
 /**
  * @brief Application Q1: Delete the element with the minimum value and fill its gap with the last element.
@@ -154,6 +155,140 @@ bool Merge(SqList &L1, SqList &L2, SqList &result) {
     return true;
 }
 
+/**
+ * @brief Helper function to reverse a specific range [left, right] in the array.
+ * @param A The array reference
+ * @param left Start index of the range (0-based)
+ * @param right End index of the range (0-based)
+ */
+void ReverseRange(SqList &A, int left, int right) {
+    while (left < right) {
+        std::swap(A.data[left], A.data[right]);
+        left++;
+        right--;
+    }
+}
+
+/**
+ * @brief Application Q7: Swap the positions of two sub-lists in array A.
+ *        First sub-list has length m, second has length n.
+ *        Time Complexity: O(m+n), Space Complexity: O(1)
+ * @param A Reference to the sequential list
+ * @param m Length of the first sub-list
+ * @param n Length of the second sub-list
+ */
+void Exchange(SqList &A, int m, int n) {
+    // 1. Reverse the first sub-list: from index 0 to m-1
+    ReverseRange(A, 0, m - 1);
+    // 2. Reverse the second sub-list: from index m to m+n-1
+    ReverseRange(A, m, m + n - 1);
+    // 3. Reverse the entire list: from index 0 to m+n-1
+    ReverseRange(A, 0, m + n - 1);
+}
+
+/**
+ * @brief Application Q8: Search for x in a sorted list using binary search.
+ *        If found, swap with its successor. If not found, insert x to maintain order.
+ *        Time Complexity: O(log n) for search, O(n) for insertion in worst case.
+ *        Space Complexity: O(1)
+ * @param L Reference to the sequential list
+ * @param x The target value to search or insert
+ */
+void SearchExchangeInsert(SqList &L, ElemType x) {
+    int low = 0, high = L.length - 1;
+    int mid = 0;
+    // 1. Binary Search
+    while (low <= high) {
+        mid = (high + low) / 2;
+        if (L.data[mid] == x) {
+            break;
+        } 
+        else if (L.data[mid] < x) {
+            low = mid + 1;
+        }
+        else {
+            high = mid - 1;
+        }
+    }
+    // 2. If found x (L.data[mid] == x), swap with its successor
+    if (low <= high && mid < L.length - 1 && mid >= 0) {
+        std::swap(L.data[mid], L.data[mid + 1]);
+    }
+    // 3. If NOT found, insert x at index 'low' (or 'high + 1') to keep it sorted
+    else if (low > high) {
+        // Check if there's enough space in static array
+        if (L.length >= MaxSize) {
+            std::cerr << "Error: List is full, cannot insert." << std::endl;
+            return;
+        }
+        // Shift elements from index 'low' to the right
+        for (int i = L.length; i > low; i--) {
+            L.data[i] = L.data[i-1];
+        }
+        // Insert x and update length
+        L.data[low] = x;
+        L.length++;
+    }
+}
+
+/**
+ * @brief Application Q9: Output the intersection of three sorted lists in reverse order.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param A The first sorted sequential list
+ * @param B The second sorted sequential list
+ * @param C The third sorted sequential list
+ */
+void PrintIntersectionReverse(const SqList &A, const SqList &B, const SqList &C) {
+    if (A.length == 0 || B.length == 0 || C.length == 0) {
+        std::cerr << "Error: There exits empty list." << std::endl;
+        return;
+    }
+    // 1. Initialize three pointers to the end of each list
+    int i = A.length - 1;
+    int j = B.length - 1;
+    int k = C.length - 1;
+
+    std::cout << "Reverse Intersection: [ ";
+
+    while (i >= 0 && j >= 0 && k >= 0) {
+        // Condition A: All three elements are equal
+        if ((A.data[i] == B.data[j]) && (B.data[j] == C.data[k])) {
+            std::cout << A.data[i] << " "; // Print directly (naturally in reverse order)
+            i--, j--, k--;
+        }
+        // Condition B: Elements are not equal. Move the pointer pointing to the maximum value forward.
+        else {
+            int maxVal = std::max(A.data[i], std::max(B.data[j], C.data[k]));
+            if (A.data[i] == maxVal) i--;
+            else if (B.data[j] == maxVal) j--;
+            else k--;
+        }
+    }
+    
+    std::cout << "]" << std::endl;
+}
+
+/**
+ * @brief Application Q10 (2010 Unified Exam Real Question): 
+ *        Cyclically left shift the sequential list R by p positions.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param R Reference to the sequential list
+ * @param p Number of positions to shift left (0 < p < n)
+ */
+void LeftShift(SqList &R, int p) {
+    // Standard safety check for cyclic shifts
+    if (p <= 0 || p >= R.length) {
+        std::cerr << "Error: Invalid p." << std::endl;
+        return;
+    }
+    // 1. Reverse the first sub-list: from index 0 to p-1
+    ReverseRange(R, 0, p - 1);
+    // 2. Reverse the second sub-list: from index p to R.length-1
+    ReverseRange(R, p, R.length - 1);
+    // 3. Reverse the entire list: from index 0 to R.length-1
+    ReverseRange(R, 0, R.length - 1);
+}
+
 int main() {
     std::cout << "Hello, linear list!" << "\n";
 
@@ -256,6 +391,96 @@ int main() {
     } else {
         std::cerr << "Error: Merged size exceeds max capacity." << std::endl;
     }
+    
+    // Application Q7
+    std::cout << "===== Application Q7 =====" << std::endl;
+    SqList A;
+    InitList(A);
+
+    int m = 3; // Length of the first sub-list:  [ 1, 2, 3 ]
+    int n = 4; // Length of the second sub-list: [ 10, 20, 30, 40 ]
+
+    // Initialize list A with m + n elements: [ 1, 2, 3, 10, 20, 30, 40 ]
+    for (int i = 0; i < 3; i++) ListInsert(A, i + 1, i + 1);
+    for (int j = 0; j < 4; j++) ListInsert(A, A.length + 1, (j + 1) * 10);
+
+    std::cout << "Before Exchanging: ";
+    PrintList(A); // Expected: [ 1 2 3 10 20 30 40 ]
+
+    // Perform the exchange
+    Exchange(A, m, n);
+
+    std::cout << "After Exchanging: ";
+    PrintList(A); // Expected: [ 10 20 30 40 1 2 3 ]
+    
+    // Application Q8
+    std::cout << "===== Application Q8 =====" << std::endl;
+    SqList B;
+    InitList(B);
+
+    // Initial sorted data: [ 10, 20, 30, 40, 50 ]
+    for (int i = 0; i < 5; i++) {
+        ListInsert(B, i + 1, 10 * (i + 1));
+    }
+
+    std::cout << "Initial List: ";
+    PrintList(B); // Expected: [ 10 20 30 40 50 ]
+
+    // Test 1: Found case (Search for 30, should swap with 40)
+    std::cout << "--- Test 1: Search for 30 (Found) ---" << std::endl;
+    SearchExchangeInsert(L, 30);
+    PrintList(L); // Expected: [ 10 20 40 30 50 ]
+    // Reset list back to sorted for the next test
+    std::swap(L.data[2], L.data[3]); 
+    // Test 2: Not found case (Search for 35, should insert between 30 and 40)
+    std::cout << "--- Test 2: Search for 35 (Not Found -> Insert) ---" << std::endl;
+    SearchExchangeInsert(L, 35);
+    PrintList(L); // Expected: [ 10 20 30 35 40 50 ]
+
+    // Application Q9
+    SqList A1, B1, C1;
+    InitList(A1); InitList(B1); InitList(C1);
+
+    // Test data from the example:
+    // A1 = {1, 2, 3}
+    ListInsert(A1, 1, 1); ListInsert(A1, 2, 2); ListInsert(A1, 3, 3);
+    // B1 = {2, 3, 4}
+    ListInsert(B1, 1, 2); ListInsert(B1, 2, 3); ListInsert(B1, 3, 4);
+    // C1 = {-1, 0, 2}
+    ListInsert(C1, 1, -1); ListInsert(C1, 2, 0); ListInsert(C1, 3, 2);
+
+    std::cout << "List A: "; PrintList(A1);
+    std::cout << "List B: "; PrintList(B1);
+    std::cout << "List C: "; PrintList(C1);
+
+    std::cout << "--- Executing Q9 Algorithm ---" << std::endl;
+    // Expected output: 2 (since 2 is the only common element)
+    PrintIntersectionReverse(A1, B1, C1);
+    
+    // Application Q10
+    SqList R;
+    InitList(R);
+
+    // Prepare test data R = (1, 2, 3, 4, 5, 6, 7), n = 7
+    for (int i = 1; i <= 7; i++) {
+        ListInsert(R, i, i);
+    }
+    int p = 3; // Shift left by 3 positions
+
+    std::cout << "Before Left Shift: ";
+    PrintList(R); // Expected output: [ 1 2 3 4 5 6 7 ]
+
+    // Execute the optimal algorithm
+    LeftShift(R, p);
+
+    std::cout << "After Left Shift by " << p << " positions: ";
+    PrintList(R); // Expected output: [ 4 5 6 7 1 2 3 ]
+
+                  
+    LeftShift(R, p);
+
+    std::cout << "After Left Shift by " << p << " positions: ";
+    PrintList(R); // Expected output: [ 7 1 2 3 4 5 6 ]
 
     return 0;
 }

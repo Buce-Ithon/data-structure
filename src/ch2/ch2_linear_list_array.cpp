@@ -475,7 +475,6 @@ int main() {
 
     std::cout << "After Left Shift by " << p << " positions: ";
     PrintList(R); // Expected output: [ 4 5 6 7 1 2 3 ]
-
                   
     LeftShift(R, p);
 

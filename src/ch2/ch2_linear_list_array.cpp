@@ -289,6 +289,61 @@ void LeftShift(SqList &R, int p) {
     ReverseRange(R, 0, R.length - 1);
 }
 
+/**
+ * @brief Application Q11 (2011 Unified Exam Real Question): 
+ *        Find the median of two equal-length sorted lists using binary cut.
+ *        Time Complexity: O(log n), Space Complexity: O(1)
+ * @param A The first sorted sequential list
+ * @param B The second sorted sequential list
+ * @return The median value
+ */
+ElemType FindMedianSortedLists(const SqList &A, const SqList &B) {
+    // low1, high1 represent the search range for list A
+    int low1 = 0, high1 = A.length - 1;
+    // low2, high2 represent the search range for list B
+    int low2 = 0, high2 = B.length - 1;
+    
+    // Loop until each search range contains only 1 element
+    while (low1 < high1 && low2 < high2) {
+        int mid1 = low1 + (high1 - low1) / 2;
+        int mid2 = low2 + (high2 - low2) / 2;
+        
+        // Case 1: The two medians are equal
+        if (A.data[mid1] == B.data[mid2]) {
+            return A.data[mid1];
+        }
+        // Case 2: Median of A is smaller than Median of B
+        else if (A.data[mid1] < B.data[mid2]) {
+            // If the current sequence length is odd
+            if ((high1 - low1) % 2 == 0) {
+                low1 = mid1;      // Keep the post-median part of A (include mid1)
+                high2 = mid2;     // Keep the pre-median part of B (include mid2)
+            } 
+            // If the current sequence length is even
+            else {
+                low1 = mid1 + 1;  // Keep the post-median part of A (exclude mid1)
+                high2 = mid2;     // Keep the pre-median part of B (include mid2)
+            }
+        }
+        // Case 3: Median of A is larger than Median of B
+        else {
+            // If the current sequence length is odd
+            if ((high1 - low1) % 2 == 0) {
+                high1 = mid1;      // Keep the pre-median part of A (include mid1)
+                low2 = mid2;       // Keep the post-median part of B (include mid2)
+            }
+            // If the current sequence length is even
+            else {
+                high1 = mid1;      // Keep the pre-median part of A (include mid1)
+                low2 = mid2 + 1;   // Keep the post-median part of B (exclude mid2)
+            }
+        }
+    }
+    
+    // When only 1 element left in each list, return the smaller one
+    return A.data[low1] < B.data[low2] ? A.data[low1] : B.data[low2];
+}
+
 int main() {
     std::cout << "Hello, linear list!" << "\n";
 
@@ -438,6 +493,7 @@ int main() {
     PrintList(L); // Expected: [ 10 20 30 35 40 50 ]
 
     // Application Q9
+    std::cout << "===== Application Q9 =====" << std::endl;
     SqList A1, B1, C1;
     InitList(A1); InitList(B1); InitList(C1);
 
@@ -458,6 +514,7 @@ int main() {
     PrintIntersectionReverse(A1, B1, C1);
     
     // Application Q10
+    std::cout << "===== Application Q10 =====" << std::endl;
     SqList R;
     InitList(R);
 
@@ -480,6 +537,23 @@ int main() {
 
     std::cout << "After Left Shift by " << p << " positions: ";
     PrintList(R); // Expected output: [ 7 1 2 3 4 5 6 ]
+
+    // Application Q11
+    std::cout << "===== Application Q11 =====" << std::endl;
+    SqList A2, B2;
+    InitList(A2); InitList(B2);
+
+    // Test case from example:
+    // A2 = {11, 13, 15, 17, 19}
+    ListInsert(A2, 1, 11); ListInsert(A2, 2, 13); ListInsert(A2, 3, 15); ListInsert(A2, 4, 17); ListInsert(A2, 5, 19);
+    // B2 = {2, 4, 6, 8, 20}
+    ListInsert(B2, 1, 2);  ListInsert(B2, 2, 4);  ListInsert(B2, 3, 6);  ListInsert(B2, 4, 8);  ListInsert(B2, 5, 20);
+
+    std::cout << "List A2: "; PrintList(A2);
+    std::cout << "List B2: "; PrintList(B2);
+
+    // Total elements combined: 2, 4, 6, 8, 11, 13, 15, 17, 19, 20 -> The 5th element is 11
+    std::cout << "Median found by O(log n) algorithm: " << FindMedianSortedLists(A2, B2) << std::endl;
 
     return 0;
 }

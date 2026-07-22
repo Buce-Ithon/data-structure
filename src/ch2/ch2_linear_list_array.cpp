@@ -1,8 +1,13 @@
+#include <cstddef>
 #include <iostream>
 #include <linear_list_array.h>
 #include <cstdlib>
 #include <ostream>
 #include <utility>
+#include <vector>
+#include <cmath>
+#include <climits>
+#include <algorithm>
 
 /**
  * @brief Application Q1: Delete the element with the minimum value and fill its gap with the last element.
@@ -344,6 +349,147 @@ ElemType FindMedianSortedLists(const SqList &A, const SqList &B) {
     return A.data[low1] < B.data[low2] ? A.data[low1] : B.data[low2];
 }
 
+/**
+ * @brief Application Q12 (2013 Unified Exam Real Question): 
+ *        Find the majority element in list A using Boyer-Moore Voting Algorithm.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param A Reference to the sequential list
+ * @return The majority element if it exists, otherwise -1.
+ */
+ElemType FindMajorityElement(const SqList &A) {
+    if (A.length == 0) return -1;
+
+    // Phase 1: Candidate Selection
+    ElemType candidate = A.data[0];
+    int count = 1;
+
+    for (int i = 1; i < A.length; i++) {
+        if (A.data[i] == candidate) {
+            count++;
+        } else {
+            if (count > 0) {
+                count--;
+            } else {
+                candidate = A.data[i];
+                count = 1;
+            }
+        }
+    }
+
+    // Phase 2: Candidate Verification
+    int actualCount = 0;
+    for (int i = 0; i < A.length; i++) {
+        if (A.data[i] == candidate) {
+            actualCount++;
+        }
+    }
+
+    // Check if the candidate's frequency is strictly greater than n / 2
+    if (actualCount > A.length / 2) {
+        return candidate;
+    }
+
+    return -1; // No majority element found
+}
+
+/**
+ * @brief Application Q13 (2018 Unified Exam Real Question): 
+ *        Find the smallest missing positive integer in list A.
+ *        Time Complexity: O(n), Space Complexity: O(n)
+ * @param A Reference to the sequential list
+ * @return The smallest missing positive integer
+ */
+int FindFirstMissingPositive(const SqList &A) {
+    int n = A.length;
+    // Auxiliary array of size n + 1, initialized to 0
+    std::vector<int> hash(static_cast<size_t>(n + 1), 0);
+
+    // Step 1: Mark elements present in range [1, n]
+    for (int i = 0; i < n; i++) {
+        if (A.data[i] >= 1 && A.data[i] <= n) {
+            hash[static_cast<size_t>(A.data[i])] = 1;
+        }
+    }
+
+    // Step 2: Find the first index not marked
+    for (int i = 1; i <= n; i++) {
+        if (hash[static_cast<size_t>(i)] == 0) {
+            return i;
+        }
+    }
+
+    // If all 1..n exist, the missing integer is n + 1
+    return n + 1;
+}
+
+/**
+ * @brief Application Q14 (2020 Unified Exam Real Question): 
+ *        Find the minimum distance among all possible triplets (a, b, c) from S1, S2, S3.
+ *        Time Complexity: O(n1 + n2 + n3), Space Complexity: O(1)
+ * @param S1 The first sorted sequential list
+ * @param S2 The second sorted sequential list
+ * @param S3 The third sorted sequential list
+ * @return The minimum distance value D
+ */
+int FindMinTripletDistance(const SqList &S1, const SqList &S2, const SqList &S3) {
+    int i = 0, j = 0, k = 0;
+    int minDist = INT_MAX;
+
+    // Loop until any of the pointers goes out of bounds
+    while (i < S1.length && j < S2.length && k < S3.length) {
+        int a = S1.data[i];
+        int b = S2.data[j];
+        int c = S3.data[k];
+
+        // Calculate distance D = |a - b| + |b - c| + |c - a|
+        int currentDist = std::abs(a - b) + std::abs(b - c) + std::abs(c - a);
+
+        // Update global minimum distance
+        if (currentDist < minDist) {
+            minDist = currentDist;
+        }
+
+        // Greedy strategy: Advance the pointer that points to the minimum element
+        int minVal = std::min({a, b, c});
+        if (a == minVal) i++;
+        else if (b == minVal) j++;
+        else k++;
+    }
+
+    return minDist;
+}
+
+/**
+ * @brief Application Q15 (2025 Unified Exam Real Question):
+ *        Calculate the maximum product of A[i] and A[j] (i <= j < n) for each i.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param A Source array
+ * @param res Result array storing maximum products
+ * @param n Size of the array
+ */
+void calMulMax(int A[], int res[], int n) {
+    if (n <= 0) return;
+
+    // Initialize suffix max and min with the last element A[n-1]
+    int maxVal = A[n - 1];
+    int minVal = A[n - 1];
+
+    // Traverse backwards from right to left
+    for (int i = n - 1; i >= 0; i--) {
+        // Update current suffix max and min to include A[i]
+        maxVal = std::max(maxVal, A[i]);
+        minVal = std::min(minVal, A[i]);
+
+        // If A[i] is positive/zero, multiply with suffix max;
+        // If A[i] is negative, multiply with suffix min to get the maximum product.
+        if (A[i] >= 0) {
+            res[i] = A[i] * maxVal;
+        } else {
+            res[i] = A[i] * minVal;
+        }
+    }
+}
+
 int main() {
     std::cout << "Hello, linear list!" << "\n";
 
@@ -554,6 +700,81 @@ int main() {
 
     // Total elements combined: 2, 4, 6, 8, 11, 13, 15, 17, 19, 20 -> The 5th element is 11
     std::cout << "Median found by O(log n) algorithm: " << FindMedianSortedLists(A2, B2) << std::endl;
+    
+    // Application Q12
+    std::cout << "===== Application Q12 =====" << std::endl;
+    SqList A3, B3;
+    InitList(A3); InitList(B3);
+
+    // Test Case 1: A3 = (0, 5, 5, 3, 5, 7, 5, 5), Length = 8, Majority = 5
+    int test1[] = {0, 5, 5, 3, 5, 7, 5, 5};
+    for (int i = 0; i < 8; i++) ListInsert(A3, i + 1, test1[i]);
+
+    // Test Case 2: B3 = (0, 5, 5, 3, 5, 1, 5, 7), Length = 8, No Majority
+    int test2[] = {0, 5, 5, 3, 5, 1, 5, 7};
+    for (int i = 0; i < 8; i++) ListInsert(B3, i + 1, test2[i]);
+
+    std::cout << "List A3: "; PrintList(A3);
+    std::cout << "Majority Element of A3: " << FindMajorityElement(A3) << std::endl; // Expected: 5 
+
+    std::cout << "List B3: "; PrintList(B3);
+    std::cout << "Majority Element of B3: " << FindMajorityElement(B3) << std::endl; // Expected: -1
+    
+    // Application Q13
+    std::cout << "===== Application Q13 =====" << std::endl;
+    SqList A4, B4;
+    InitList(A4); InitList(B4);
+
+    // Test Case 1: A4 = {-5, 3, 2, 3}, Expected: 1
+    ListInsert(A4, 1, -5); ListInsert(A4, 2, 3); ListInsert(A4, 3, 2); ListInsert(A4, 4, 3);
+
+    // Test Case 2: B4 = {1, 2, 3}, Expected: 4
+    ListInsert(B4, 1, 1); ListInsert(B4, 2, 2); ListInsert(B4, 3, 3);
+
+    std::cout << "List A4: "; PrintList(A4);
+    std::cout << "Missing smallest positive in A4: " << FindFirstMissingPositive(A4) << std::endl;
+
+    std::cout << "List B4: "; PrintList(B4);
+    std::cout << "Missing smallest positive in B4: " << FindFirstMissingPositive(B4) << std::endl;
+    
+    // Application Q14
+    std::cout << "===== Application Q14 =====" << std::endl;
+    SqList S1, S2, S3;
+    InitList(S1); InitList(S2); InitList(S3);
+
+    // Test case from question:
+    // S1 = {-1, 0, 9}
+    ListInsert(S1, 1, -1); ListInsert(S1, 2, 0); ListInsert(S1, 3, 9);
+    // S2 = {-25, -10, 10, 11}
+    ListInsert(S2, 1, -25); ListInsert(S2, 2, -10); ListInsert(S2, 3, 10); ListInsert(S2, 4, 11);
+    // S3 = {2, 9, 17, 30, 41}
+    ListInsert(S3, 1, 2); ListInsert(S3, 2, 9); ListInsert(S3, 3, 17); ListInsert(S3, 4, 30); ListInsert(S3, 5, 41);
+
+    std::cout << "List S1: "; PrintList(S1);
+    std::cout << "List S2: "; PrintList(S2);
+    std::cout << "List S3: "; PrintList(S3);
+
+    //std::cout << "--- Executing Q14 Algorithm ---" << std::endl;
+    // Expected Output: 2 (Triplet: 9, 10, 9)
+    std::cout << "Minimum Triplet Distance: " << FindMinTripletDistance(S1, S2, S3) << std::endl;
+    
+    // Application Q15
+    std::cout << "===== Application Q15 =====" << std::endl;
+    int A5[] = {1, 4, -9, 6};
+    int n5 = 4;
+    int res[4];
+
+    calMulMax(A5, res, n5);
+
+    std::cout << "--- Input Array A5 ---" << std::endl;
+    std::cout << "[ ";
+    for (int i = 0; i < n5; i++) std::cout << A5[i] << " ";
+    std::cout << "]" << std::endl;
+
+    std::cout << "--- Result Array res ---" << std::endl;
+    std::cout << "[ ";
+    for (int i = 0; i < n5; i++) std::cout << res[i] << " ";
+    std::cout << "]" << std::endl;
 
     return 0;
 }

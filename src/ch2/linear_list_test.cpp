@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <iostream>
-#include <linear_list_array.h>
+#include <linear_list.h>
 #include <cstdlib>
 #include <ostream>
 #include <utility>

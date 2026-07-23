@@ -63,29 +63,45 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-# =====================
-# 3. Include head files
-# =====================
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+# ==========================================
+# 3. Automated scanning and building targets
+# ==========================================
+# 3-1. Compile the Common Data Structure Library (ds_lib)
+# Scan all implementation files under src/common/ (or explicitly specify src/common/link_list.cpp)
+file(GLOB COMMON_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/common/*.cpp")
+# Create the static library target ds_lib
+add_library(ds_lib STATIC ${COMMON_SOURCES})
+# Add the static library target to ds_lib Associate header file directories:
+target_include_directories(ds_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-# ==========================================
-# 4. Automated scanning and building targets
-# ==========================================
-# Scan all .c and .cpp files in ./src/
-file(GLOB_RECURSE ALL_SOURCES 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+# 3-2. Automated Scanning and Compilation of Experiment Targets (Exes) for Each Chapter
+# Note: Exclude the src/common directory; only scan the chapter's experiment code!
+file(GLOB_RECURSE EXPERIMENT_SOURCES 
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/ch*/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/ch*/*.cpp"
 )
 
 # Circularly compile every source file, including the new
-foreach(source_file IN LISTS ALL_SOURCES)
-    # Get the filename (excluding path and extension) as the name of the executable
-    # Get the file extension, to distinguish files in the log
-    get_filename_component(exe_name "${source_file}" NAME_WE)
-    get_filename_component(file_ext "${source_file}" EXT)
-    # Add compilation targets
-    add_executable("${exe_name}""${source_file}")
-    # Print log
-    file(RELATIVE_PATH relative_src "${CMAKE_CURRENT_SOURCE_DIR}" "${source_file}")
-    message(STATUS "Found source: src/${exe_name}${file_ext} -> Target: ${exe_name}")
+foreach(source_file IN LISTS EXPERIMENT_SOURCES)
+    # Get path relative to src directory, e.g., "array/vector.cpp" -> "array/vector"
+    file(RELATIVE_PATH rel_path "${CMAKE_CURRENT_SOURCE_DIR}/src" "${source_file}")
+    get_filename_component(rel_dir "${rel_path}" DIRECTORY)
+    get_filename_component(filename_we "${rel_path}" NAME_WE)
+
+    # Sanitize name for CMake Target: convert "array/vector" into "array_vector"
+    if(rel_dir)
+        string(REPLACE "/" "_" target_prefix "${rel_dir}")
+        set(target_name "${target_prefix}_${filename_we}")
+    else()
+        set(target_name "${filename_we}")
+    endif()
+
+    # Create target
+    add_executable("${target_name}" "${source_file}")
+    
+    # Automatically link common data structure libraries (ds_lib will automatically pass the include directory, no need to manually write target_include_directories)
+    target_link_libraries("${target_name}" PRIVATE ds_lib)
+
+    message(STATUS "Configured Target: ${target_name} <- src/${rel_path}")
 endforeach()

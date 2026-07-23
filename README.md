@@ -2,10 +2,12 @@
 This repository is designed to manage and compile course experiments and exercises for **Data Structures** using CMake. It supports a hybrid development environment of both **C** and **C++** (C11 and C++20 standards). 
 
 ## Key Features
-* **Auto-Scanning Build System**: You do not need to manually edit `CMakeLists.txt` when adding new files. Any `.c` or `.cpp` file placed inside the `src/` directory is automatically detected and compiled as an independent executable.
-* **CMake Presets Support**: Fully integrated with `CMakePresets.json` to simplify configuring and building across different compilers (Ninja, MinGW, and MSVC).
-* **Robust Code Quality**: Features strict compiler warning flags (for both GCC/Clang and MSVC) to help you catch common pointer, memory management, and type-mismatch bugs early in your data structure implementations.
-* **Editor/LSP Integration**: Automatically generates `compile_commands.json` for precise code completion and diagnostics when using language servers like `clangd` in Vim/Neovim or VS Code.
+* **Modular Library Architecture**: Common data structure implementations (located in `src/common/`) are automatically built into a static library (`ds_lib`), separating reusable core logic from individual chapter experiments.
+* **Auto-Scanning Build System**: You do not need to manually edit `CMakeLists.txt` when adding new exercise files under `src/ch*/`. Any `.c` or `.cpp` file in the chapter directories is automatically detected, compiled, and linked against `ds_lib`.
+* **Conflict-Free Target Naming**: Executable target names are automatically prefixed with their directory names (e.g., `src/ch2/link_list_test.cpp` becomes `ch2_link_list_test`), preventing name collisions across different chapters.
+* **CMake Presets Support**: Fully integrated with `CMakePresets.json` to simplify configuring and building across different toolchains (Ninja, MinGW, and MSVC).
+* **Robust Code Quality**: Features strict compiler warning flags (for both GCC/Clang and MSVC) to help catch common pointer, memory management, and type-mismatch bugs early.
+* **Editor/LSP Integration**: Automatically generates and syncs `compile_commands.json` to the project root for precise code completion and diagnostics when using language servers like `clangd` in Vim/Neovim or VS Code.
 
 ## Project Structure
 ```text
@@ -15,13 +17,19 @@ DataStructures/
 ├── .gitignore             # Git ignore rules
 ├── LICENSE                # Project license
 ├── README.md              # Project documentation
-├── include/               # Custom header files (.h / .hpp)
+├── include/               # Public header files (.h / .hpp)
+│   ├── linear_list.h
+│   └── link_list.h
 ├── ref/                   # Reference materials, lecture notes, or PDFs
-└── src/                   # Source files organized by chapters
+└── src/                   # Source files organized by common implementations and chapters
+    ├── common/            # Common data structure implementations (compiled into ds_lib)
+    │   ├── linear_list.cpp
+    │   └── link_list.cpp
     ├── ch1/               # Chapter 1 Exercises
-    │   └── ch1_seq_list.c
+    │   └── fibonacci_sequence.cpp
     └── ch2/               # Chapter 2 Exercises
-        └── ch2_link_list.cpp
+        ├── linear_list_test.cpp
+        └── link_list_test.cpp
 ```
 
 > A friendly reminder about potential naming conflicts: 
@@ -92,10 +100,12 @@ cmake --build --preset msvc-release
 ## Compiling & Running a Specific Exercise
 To avoid rebuilding the entire project, you can compile a single target (the filename without the extension) by using the `--target` flag.
 
-```bash
-# Example: Compile only 'link_list' (located in src/ch2/ch2_link_list.cpp)
-cmake --build --preset ninja-debug --target ch2_link_list
+*Note: Target names are automatically formatted as <chapter>_<filename> (e.g., src/ch2/link_list_test.cpp -> ch2_link_list_test).*
 
-# Run the compiled executable
-./build/ninja/debug/link_list.exe
+```bash
+# Example: Compile only 'ch2_link_list_test'
+cmake --build --preset ninja-debug --target ch2_link_list_test
+
+# Run the compiled executable (Ninja Debug build path example)
+./build/ninja/debug/ch2_link_list_test.exe
 ```

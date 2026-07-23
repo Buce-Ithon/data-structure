@@ -1,4 +1,4 @@
-#include "linear_list.h"
+#include <linear_list.h>
 #include <iostream>
 
 void InitList(SqList &L) {

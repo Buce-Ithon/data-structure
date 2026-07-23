@@ -1,8 +1,6 @@
 #ifndef LINK_LIST_H
 #define LINK_LIST_H
 
-#include <iostream>
-
 // Reserved element type, using int as a default example. 
 // Can be changed to other types in practical use.
 using ElemType = int;

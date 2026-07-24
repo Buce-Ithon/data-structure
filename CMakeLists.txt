@@ -6,7 +6,7 @@ DESCRIPTION "A data structures learning project, involving exercices and experim
 )
 
 # ============================================
-# 2. Language standard and compilation options
+# 1. Language standard and compilation options
 # ============================================
 # C standard
 set(CMAKE_C_STANDARD 11)
@@ -64,9 +64,9 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # ==========================================
-# 3. Automated scanning and building targets
+# 2. Automated scanning and building targets
 # ==========================================
-# 3-1. Compile the Common Data Structure Library (ds_lib)
+# 2-1. Compile the Common Data Structure Library (ds_lib)
 # Scan all implementation files under src/common/ (or explicitly specify src/common/link_list.cpp)
 file(GLOB COMMON_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/common/*.cpp")
 # Create the static library target ds_lib
@@ -74,7 +74,7 @@ add_library(ds_lib STATIC ${COMMON_SOURCES})
 # Add the static library target to ds_lib Associate header file directories:
 target_include_directories(ds_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-# 3-2. Automated Scanning and Compilation of Experiment Targets (Exes) for Each Chapter
+# 2-2. Automated Scanning and Compilation of Experiment Targets (Exes) for Each Chapter
 # Note: Exclude the src/common directory; only scan the chapter's experiment code!
 file(GLOB_RECURSE EXPERIMENT_SOURCES 
     CONFIGURE_DEPENDS

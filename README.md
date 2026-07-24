@@ -32,12 +32,6 @@ DataStructures/
         └── link_list_test.cpp
 ```
 
-> A friendly reminder about potential naming conflicts: 
-> 
-> When using this automatic compilation mechanism, ensure that filenames in different chapter directories are not duplicated.
-> 
-> For example: If you write code in both `src/ch1/main.cpp` and `src/ch2/main.cpp`, the generated targets will both be named `main`, which will cause a CMake conflict error. It is recommended to give each experimental file a unique name, such as `ch1_seq_list.cpp` and `ch2_link_list.cpp`.
-
 # Build commands
 Since this project utilizes CMake Presets, you can configure and build the project using the simplified preset names without manually specifying generators or build directories.
 

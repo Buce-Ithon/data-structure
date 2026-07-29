@@ -28,11 +28,11 @@ Every comparison-based sorting process can be abstracted as a **binary decision 
 
 ## 2. How Many Cases Must Be Distinguished?
 
-For n distinct elements, the number of possible permutations is **n!**.
+For $n$ distinct elements, the number of possible permutations is **$n!$**.
 
-Each leaf node corresponds to one final permutation, so the decision tree must have **at least n! leaves**.
+Each leaf node corresponds to one final permutation, so the decision tree must have **at least $n!$ leaves**.
 
-A binary tree of height h can have at most **2^h** leaves. Therefore:
+A binary tree of height $h$ can have at most **$2^h$** leaves. Therefore:
 
 $$2^h \ge n!$$
 

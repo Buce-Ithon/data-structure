@@ -5,6 +5,9 @@
 using LinkList = SinglyLinkedList::LinkList;
 using LNode    = SinglyLinkedList::LNode;
 
+using DLinkList = DoublyLinkedList::DLinkList;
+using DNode = DoublyLinkedList::DNode;
+
 /**
  * @brief Application Q1: Delete all nodes with value x from a singly linked list with a head node.
  *        Frees the memory allocated for each deleted node.
@@ -284,6 +287,215 @@ bool IsSubsequence(LinkList A, LinkList B) {
     return false;
 }
 
+/**
+ * @brief Application Q11: Determine whether a doubly circular linked list with a dummy head node is symmetric.
+ *        Checks if the sequence of elements reads the same forwards and backwards.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param L Pointer to the dummy head node of the doubly circular linked list
+ * @return true if the list is empty or symmetric; false otherwise
+ */
+bool IsSymmetric(DLinkList L) {
+    // 1. Handle edge cases: Null list or empty list (only head node) is symmetric
+    if (L == nullptr || L->next == L) {
+        return true;
+    }
+
+    // 2. Initialize left pointer pointing to the first data node,
+    //    and right pointer pointing to the last data node
+    DNode *left = L->next;
+    DNode *right = L->prior;
+
+    // 3. Traverse inward from both ends towards the center
+    while (left != right && right->next != left) {
+        // If data values do not match, the list is not symmetric
+        if (left->data != right->data) {
+            return false;
+        }
+
+        // Advance left pointer clockwise and right pointer counter-clockwise
+        left = left->next;
+        right = right->prior;
+    }
+
+    // 4. All corresponding node pairs matched
+    return true;
+}
+
+/**
+ * @brief Application Q12: Concatenate circular singly linked list h2 to the end of h1,
+ *        maintaining a valid circular singly linked list structure and freeing h2's dummy head node.
+ *        Time Complexity: O(m + n), Space Complexity: O(1)
+ * @param h1 Pointer to the dummy head node of the first circular singly linked list
+ * @param h2 Pointer to the dummy head node of the second circular singly linked list
+ * @return LinkList Pointer to the merged circular singly linked list's dummy head node (h1)
+ */
+LinkList MergeCircularLists(LinkList h1, LinkList h2) {
+    // 1. Handle cases where either list is null
+    if (h1 == nullptr) return h2;
+    if (h2 == nullptr) return h1;
+
+    // 2. Find the tail node of the first circular list (p1)
+    LNode *p1 = h1;
+    while (p1->next != h1) {
+        p1 = p1->next;
+    }
+
+    // 3. Find the tail node of the second circular list (p2)
+    LNode *p2 = h2;
+    while (p2->next != h2) {
+        p2 = p2->next;
+    }
+
+    // 4. Link the tail of h1 to the first data node of h2
+    p1->next = h2->next;
+
+    // 5. Link the tail of h2 back to the head of h1 to close the loop
+    p2->next = h1;
+
+    // 6. Delete the redundant dummy head node of h2
+    delete h2;
+
+    return h1;
+}
+
+struct DNodeF {
+    ElemType data;
+    int freq;
+    DNodeF *prior;
+    DNodeF *next;
+    
+    DNodeF(ElemType val = 0, int f = 0, DNodeF *p = nullptr, DNodeF *n = nullptr)
+        : data(val), freq(f), prior(p), next(n) {}
+};
+
+using DLinkListF = DNodeF*;
+
+/**
+ * @brief Application Q13: Search for element x in a non-circular doubly linked list L with dummy head node.
+ *        Increments the target node's freq field by 1 and moves it forward so that nodes are sorted
+ *        by freq in descending order (with most recently accessed nodes placed before nodes of equal freq).
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param L Pointer to the dummy head node of the doubly linked list
+ * @param x The element value to search for
+ * @return DNodeF* Pointer to the located node, or nullptr if x is not found
+ */
+DNodeF* Locate(DLinkListF L, ElemType x) {
+    // 1. Check if the list is empty or invalid
+    if (L == nullptr || L->next == nullptr) {
+        return nullptr;
+    }
+
+    // 2. Search for node with value x
+    DNodeF *p = L->next;
+    while (p != nullptr && p->data != x) {
+        p = p->next;
+    }
+
+    // 3. If x is not found, return nullptr
+    if (p == nullptr) {
+        return nullptr;
+    }
+
+    // 4. Increment the frequency count of the found node
+    p->freq++;
+
+    // 5. Detach node p from its current position
+    p->prior->next = p->next;
+    if (p->next != nullptr) {
+        p->next->prior = p->prior;
+    }
+
+    // 6. Find insertion position: scan backward for a node with freq > p->freq
+    //    (Strictly greater ensures p is placed BEFORE any nodes with equal freq)
+    DNodeF *q = p->prior;
+    while (q != L && q->freq <= p->freq) {
+        q = q->prior;
+    }
+
+    // 7. Insert node p after node q
+    p->next = q->next;
+    if (q->next != nullptr) {
+        q->next->prior = p;
+    }
+    p->prior = q;
+    q->next = p;
+
+    // 8. Return pointer to the located node
+    return p;
+}
+
+/**
+ * @brief Application Q14: Rotate a singly linked list WITHOUT a dummy head node to the right by k positions.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param head Reference to the head pointer of the singly linked list (without dummy head)
+ * @param k Number of positions to rotate right (0 < k < n)
+ */
+void RotateRight(LNode* &head, int k) {
+    // 1. Handle edge cases: empty list or single node
+    if (head == nullptr || head->next == nullptr || k <= 0) {
+        return;
+    }
+
+    // 2. Compute the length of the list and find the tail node
+    int n = 1;
+    LNode *tail = head;
+    while (tail->next != nullptr) {
+        tail = tail->next;
+        n++;
+    }
+
+    // 3. Normalize k to prevent redundant full rotations
+    k = k % n;
+    if (k == 0) {
+        return;
+    }
+
+    // 4. Form a circular linked list by connecting tail to head
+    tail->next = head;
+
+    // 5. Find the new tail position: (n - k) steps from head (1-indexed count is n - k)
+    int stepsToNewTail = n - k;
+    LNode *newTail = head;
+    for (int i = 1; i < stepsToNewTail; ++i) {
+        newTail = newTail->next;
+    }
+
+    // 6. Set the new head and break the circle
+    head = newTail->next;
+    newTail->next = nullptr;
+}
+
+/**
+ * @brief Application Q15: Determine whether a singly linked list contains a cycle using Floyd's Cycle-Finding Algorithm.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param L Pointer to the dummy head node of the singly linked list
+ * @return true if a cycle exists in the list; false otherwise
+ */
+bool HasCycle(LinkList L) {
+    // 1. Handle edge cases: Null list or empty list (only head node) cannot have a cycle
+    if (L == nullptr || L->next == nullptr) {
+        return false;
+    }
+
+    // 2. Initialize slow and fast pointers starting from the first data node
+    LNode *slow = L->next;
+    LNode *fast = L->next;
+
+    // 3. Traverse the list: fast moves 2 steps, slow moves 1 step
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+
+        // 4. If slow and fast pointers meet, a cycle is detected
+        if (slow == fast) {
+            return true;
+        }
+    }
+
+    // 5. Fast pointer reached the end (nullptr), meaning no cycle exists
+    return false;
+}
+
 int main() {
     std::cout << "-------------------------------" << std::endl;
     std::cout << "Hello, world~ Holla, link list~" << std::endl;
@@ -525,6 +737,202 @@ int main() {
 
     std::cout << "Is B2 a continuous subsequence of A? "
               << (IsSubsequence(A, B2) ? "Yes" : "No") << std::endl; // Expected: No
+
+    // Application Q11
+    std::cout << "===== Application Q11 =====" << std::endl;
+
+    // Test Case 1: Symmetric List [ 1, 2, 3, 2, 1 ]
+    CircularDoublyLinkedList list11_1;
+    DLinkList L11_1 = list11_1.GetHead();
+    list11_1.ListInsert(L11_1, 1, 1);
+    list11_1.ListInsert(L11_1, 2, 2);
+    list11_1.ListInsert(L11_1, 3, 3);
+    list11_1.ListInsert(L11_1, 4, 2);
+    list11_1.ListInsert(L11_1, 5, 1);
+
+    std::cout << "List 1: ";
+    list11_1.PrintList(); // Expected: [ 1 2 3 2 1 ]
+    std::cout << "Is List 1 symmetric? "
+              << (IsSymmetric(L11_1) ? "Yes" : "No") << std::endl; // Expected: Yes
+
+    // Test Case 2: Asymmetric List [ 1, 2, 3, 4, 1 ]
+    CircularDoublyLinkedList list11_2;
+    DLinkList L11_2 = list11_2.GetHead();
+    list11_2.ListInsert(L11_2, 1, 1);
+    list11_2.ListInsert(L11_2, 2, 2);
+    list11_2.ListInsert(L11_2, 3, 3);
+    list11_2.ListInsert(L11_2, 4, 4);
+    list11_2.ListInsert(L11_2, 5, 1);
+
+    std::cout << "List 2: ";
+    list11_2.PrintList(); // Expected: [ 1 2 3 4 1 ]
+    std::cout << "Is List 2 symmetric? "
+              << (IsSymmetric(L11_2) ? "Yes" : "No") << std::endl; // Expected: No
+
+    // Application Q12
+    std::cout << "===== Application Q12 =====" << std::endl;
+
+    CircularSinglyLinkedList list12_1, list12_2;
+    LinkList h1 = list12_1.GetHead();
+    LinkList h2 = list12_2.GetHead();
+
+    // Populate List 1: [ 1, 2, 3 ]
+    list12_1.ListInsert(h1, 1, 1);
+    list12_1.ListInsert(h1, 2, 2);
+    list12_1.ListInsert(h1, 3, 3);
+
+    // Populate List 2: [ 4, 5, 6 ]
+    list12_2.ListInsert(h2, 1, 4);
+    list12_2.ListInsert(h2, 2, 5);
+    list12_2.ListInsert(h2, 3, 6);
+
+    std::cout << "List 1 before merge: ";
+    list12_1.PrintList(); // Expected: [ 1 2 3 ]
+
+    std::cout << "List 2 before merge: ";
+    list12_2.PrintList(); // Expected: [ 4 5 6 ]
+
+    // Merge lists
+    LinkList mergedHead = MergeCircularLists(h1, h2);
+
+    // Output merged circular list elements
+    std::cout << "Merged List: [ ";
+    LNode *p = mergedHead->next;
+    while (p != mergedHead) {
+        std::cout << p->data << " ";
+        p = p->next;
+    }
+    std::cout << "]" << std::endl; // Expected: [ 1 2 3 4 5 6 ]
+
+    // Application Q13
+    std::cout << "===== Application Q13 =====" << std::endl;
+
+    // Create a dummy head node
+    DLinkListF L13 = new DNodeF();
+
+    // Helper lambda to insert node at tail
+    auto appendNode = [](DLinkListF head, ElemType val) {
+        DNodeF *p13 = head;
+        while (p13->next != nullptr) p13 = p13->next;
+        DNodeF *newNode = new DNodeF(val, 0, p13, nullptr);
+        p13->next = newNode;
+    };
+
+    // Construct initial non-circular doubly linked list: [ 10, 20, 30, 40 ]
+    appendNode(L13, 10);
+    appendNode(L13, 20);
+    appendNode(L13, 30);
+    appendNode(L13, 40);
+
+    // Lambda to print list with node frequencies
+    auto printListWithFreq = [](DLinkListF head) {
+        std::cout << "[ ";
+        DNodeF *p13 = head->next;
+        while (p13 != nullptr) {
+            std::cout << p13->data << "(freq:" << p13->freq << ") ";
+            p13 = p13->next;
+        }
+        std::cout << "]" << std::endl;
+    };
+
+    std::cout << "Initial List: ";
+    printListWithFreq(L13); // Expected: [ 10(freq:0) 20(freq:0) 30(freq:0) 40(freq:0) ]
+
+    // Access node 30 once
+    Locate(L13, 30);
+    std::cout << "After Locate(L, 30): ";
+    printListWithFreq(L13); // Expected: [ 30(freq:1) 10(freq:0) 20(freq:0) 40(freq:0) ]
+
+    // Access node 20 twice
+    Locate(L13, 20);
+    Locate(L13, 20);
+    std::cout << "After Locate(L, 20) x2: ";
+    printListWithFreq(L13); // Expected: [ 20(freq:2) 30(freq:1) 10(freq:0) 40(freq:0) ]
+
+    // Access node 30 again (freq becomes 2, should jump ahead of 20 due to recent-access priority)
+    Locate(L13, 30);
+    std::cout << "After Locate(L, 30) again: ";
+    printListWithFreq(L13); // Expected: [ 30(freq:2) 20(freq:2) 10(freq:0) 40(freq:0) ]
+
+    // Access node 40
+    Locate(L13, 40);
+    std::cout << "After Locate(L, 40): ";
+    printListWithFreq(L13); // Expected: [ 30(freq:2) 20(freq:2) 40(freq:1) 10(freq:0) ]
+
+    // Application Q14
+    std::cout << "===== Application Q14 =====" << std::endl;
+
+    // Helper lambda to print a list without a dummy head node
+    auto printListNoHead = [](LNode *head) {
+        std::cout << "[ ";
+        LNode *p14 = head;
+        while (p14 != nullptr) {
+            std::cout << p14->data << " ";
+            p14 = p14->next;
+        }
+        std::cout << "]" << std::endl;
+    };
+
+    // Construct an unheaded list: {0, 1, 2, 3}
+    LNode *head14 = new LNode(0);
+    head14->next = new LNode(1);
+    head14->next->next = new LNode(2);
+    head14->next->next->next = new LNode(3);
+
+    std::cout << "Original List: ";
+    printListNoHead(head14); // Expected: [ 0 1 2 3 ]
+
+    // Rotate right by k = 1
+    int k = 1;
+    RotateRight(head14, k);
+
+    std::cout << "After Rotate Right by " << k << ": ";
+    printListNoHead(head14); // Expected: [ 3 0 1 2 ]
+
+    // Rotate right by k = 2
+    k = 2;
+    RotateRight(head14, k);
+
+    std::cout << "After Rotate Right by " << k << ": ";
+    printListNoHead(head14); // Expected: [ 1 2 3 0 ]
+
+    // Memory cleanup
+    while (head14 != nullptr) {
+        LNode *temp = head14;
+        head14 = head14->next;
+        delete temp;
+    }
+    
+    // Application Q15
+    std::cout << "===== Application Q15 =====" << std::endl;
+
+    SinglyLinkedList list15;
+    LinkList L15 = list15.GetHead();
+
+    // Populate List: [ 1, 2, 3, 4, 5 ]
+    list15.ListInsert(L15, 1, 1);
+    list15.ListInsert(L15, 2, 2);
+    list15.ListInsert(L15, 3, 3);
+    list15.ListInsert(L15, 4, 4);
+    list15.ListInsert(L15, 5, 5);
+
+    // Test Case 1: Standard linear list (no cycle)
+    std::cout << "Has cycle in normal list? " 
+              << (HasCycle(L15) ? "Yes" : "No") << std::endl; // Expected: No
+
+    // Test Case 2: Manually create a cycle (connect tail node 5 to node 3)
+    LNode *node3 = L15->next->next->next; // Pointing to node '3'
+    LNode *tail = L15->next;
+    while (tail->next != nullptr) {
+        tail = tail->next;
+    }
+    tail->next = node3; // Tail (5) now points to Node 3
+
+    std::cout << "Has cycle after creating loop? " 
+              << (HasCycle(L15) ? "Yes" : "No") << std::endl; // Expected: Yes
+
+    // Cleanup: Break the cycle manually to prevent memory leak / infinite loop during destruction
+    tail->next = nullptr;
 
     return 0;
 }

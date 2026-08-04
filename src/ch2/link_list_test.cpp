@@ -1,5 +1,8 @@
+#include <cstddef>
 #include <iostream>
 #include <link_list.h>
+#include <vector>
+#include <cmath>
 
 // Alias common definition for readability
 using LinkList = SinglyLinkedList::LinkList;
@@ -496,6 +499,244 @@ bool HasCycle(LinkList L) {
     return false;
 }
 
+/**
+ * @brief Application Q16: Find the maximum twin sum of a singly linked list WITHOUT a dummy head (length n is even).
+ *        Twin sum of the i-th node is defined as node[i]->data + node[n - 1 - i]->data.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param head Pointer to the head node of the unheaded singly linked list
+ * @return int Maximum twin sum of the list
+ */
+int PairSum(LNode* head) {
+    if (head == nullptr) return 0;
+
+    // 1. Locate the start of the second half using fast and slow pointers
+    LNode *slow = head;
+    LNode *fast = head;
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
+    // 2. Reverse the second half of the list in-place
+    LNode *prev = nullptr;
+    LNode *curr = slow;
+    while (curr != nullptr) {
+        LNode *nextNode = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = nextNode;
+    }
+    // 'prev' now points to the head of the reversed second half
+
+    // 3. Traverse both halves simultaneously to compute twin sums
+    int maxTwinSum = 0;
+    LNode *firstHalf = head;
+    LNode *secondHalf = prev;
+    
+    while (secondHalf != nullptr) {
+        int currentSum = firstHalf->data + secondHalf->data;
+        if (currentSum > maxTwinSum) {
+            maxTwinSum = currentSum;
+        }
+        firstHalf = firstHalf->next;
+        secondHalf = secondHalf->next;
+    }
+
+    // 4. Restore the second half to its original structure
+    curr = prev;
+    prev = nullptr;
+    while (curr != nullptr) {
+        LNode *nextNode = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = nextNode;
+    }
+
+    return maxTwinSum;
+}
+
+/**
+ * @brief Application Q17: Find the k-th node from the end in a singly linked list with a dummy head node.
+ *        Does not modify the linked list.
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param L Pointer to the dummy head node of the singly linked list
+ * @param k The position from the end (1-indexed, positive integer)
+ * @return int Returns 1 and prints the data if found; returns 0 otherwise
+ */
+int SearchkthToLast(LinkList L, int k) {
+    // 1. Handle invalid inputs or empty list
+    if (L == nullptr || L->next == nullptr || k <= 0) {
+        return 0;
+    }
+
+    // 2. Initialize fast pointer (p) and slow pointer (q) to the first data node
+    LNode *p = L->next;
+    LNode *q = L->next;
+
+    // 3. Move fast pointer p forward by k steps
+    int count = 0;
+    while (p != nullptr && count < k) {
+        p = p->next;
+        count++;
+    }
+
+    // 4. If count < k, the list length is less than k
+    if (count < k) {
+        return 0;
+    }
+
+    // 5. Move both pointers forward until p reaches the end (nullptr)
+    while (p != nullptr) {
+        p = p->next;
+        q = q->next;
+    }
+
+    // 6. Node q is now pointing to the k-th node from the end
+    std::cout << "Data at k-th position from last: " << q->data << std::endl;
+    return 1;
+}
+
+/**
+ * @brief Application Q18: Find the starting node of the shared suffix of two words 
+ *        represented by singly linked lists with dummy head nodes.
+ *        Time Complexity: O(m + n), Space Complexity: O(1)
+ * @param str1 Pointer to the dummy head node of the first word list
+ * @param str2 Pointer to the dummy head node of the second word list
+ * @return LNode* Pointer to the first shared node, or nullptr if no shared suffix exists
+ */
+LNode* FindSharedSuffixStart(LinkList str1, LinkList str2) {
+    // 1. Handle edge cases where either list is null or empty
+    if (str1 == nullptr || str2 == nullptr || str1->next == nullptr || str2->next == nullptr) {
+        return nullptr;
+    }
+
+    // 2. Compute length of list str1
+    int len1 = 0;
+    LNode *p1 = str1->next;
+    while (p1 != nullptr) {
+        len1++;
+        p1 = p1->next;
+    }
+
+    // 3. Compute length of list str2
+    int len2 = 0;
+    LNode *p2 = str2->next;
+    while (p2 != nullptr) {
+        len2++;
+        p2 = p2->next;
+    }
+
+    // 4. Reset pointers to the first data nodes
+    p1 = str1->next;
+    p2 = str2->next;
+
+    // 5. Advance the pointer of the longer list by the length difference
+    if (len1 > len2) {
+        int diff = len1 - len2;
+        while (diff--) {
+            p1 = p1->next;
+        }
+    } else if (len2 > len1) {
+        int diff = len2 - len1;
+        while (diff--) {
+            p2 = p2->next;
+        }
+    }
+
+    // 6. Move both pointers together until they meet (address match)
+    while (p1 != nullptr && p2 != nullptr && p1 != p2) {
+        p1 = p1->next;
+        p2 = p2->next;
+    }
+
+    // 7. Return the shared starting node (or nullptr if p1 reach the end)
+    return p1;
+}
+
+/**
+ * @brief Application Q19: Delete nodes with duplicate absolute values from a singly linked list with a dummy head.
+ *        Time Complexity: O(m), Space Complexity: O(n)
+ * @param L Pointer to the dummy head node of the singly linked list
+ * @param n Maximum possible absolute value of data (|data| <= n)
+ */
+void DeleteAbsDuplicates(LinkList L, int n) {
+    if (L == nullptr || L->next == nullptr) {
+        return;
+    }
+    
+    // 1. Auxiliary array to track od seen absolute values, size (n + 1)
+    std::vector<bool> visited(static_cast<std::size_t>(n + 1), false);
+    
+    LNode *pre = L;
+    LNode *p = L->next;
+    
+    // 2. Traverse the list once
+    while (p != nullptr) {
+        int absVal = std::abs(p->data);
+        
+        if (!visited[static_cast<std::size_t>(absVal)]) {
+            // First time seeing value found -> delete node p
+            visited[static_cast<std::size_t>(absVal)] = true;
+            pre = p;
+            p = p->next;
+        } else {
+            // Duplicate absolute value found -> delete node p
+            LNode *temp = p;
+            pre->next = p->next;
+            p = p->next;
+            delete temp;
+        }
+    }
+}
+
+/**
+ * @brief Application Q20: Reorder list L=(a1, a2, ..., an) into L'=(a1, an, a2, an-1, ...)
+ *        Time Complexity: O(n), Space Complexity: O(1)
+ * @param L Pointer to the dummy head node of the singly linked list
+ */
+void ReorderList(LinkList L) {
+    if (L == nullptr || L->next == nullptr || L->next->next == nullptr) {
+        return; // No reordering needed for lists with 0, 1, or 2 nodes
+    }
+
+    // 1. Find the middle node using slow and fast pointers
+    LNode *slow = L->next;
+    LNode *fast = L->next;
+    while (fast->next != nullptr && fast->next->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
+    // 2. Split the list into two halves and reverse the second half
+    LNode *head2 = slow->next;
+    slow->next = nullptr; // Disconnect first half
+
+    LNode *prev = nullptr;
+    LNode *curr = head2;
+    while (curr != nullptr) {
+        LNode *nextNode = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = nextNode;
+    }
+    head2 = prev; // Head of reversed second half
+
+    // 3. Interleave/Merge the two lists (L1 and reversed L2)
+    LNode *p1 = L->next;
+    LNode *p2 = head2;
+
+    while (p2 != nullptr) {
+        LNode *p1Next = p1->next;
+        LNode *p2Next = p2->next;
+
+        p1->next = p2;
+        p2->next = p1Next;
+
+        p1 = p1Next;
+        p2 = p2Next;
+    }
+}
+
 int main() {
     std::cout << "-------------------------------" << std::endl;
     std::cout << "Hello, world~ Holla, link list~" << std::endl;
@@ -933,6 +1174,193 @@ int main() {
 
     // Cleanup: Break the cycle manually to prevent memory leak / infinite loop during destruction
     tail->next = nullptr;
+    
+    // Application Q16
+    std::cout << "===== Application Q16 =====" << std::endl;
+
+    // Helper lambda to print a list without a dummy head node
+    auto printListNoHead16 = [](LNode *h) {
+        std::cout << "[ ";
+        LNode *p16 = h;
+        while (p16 != nullptr) {
+            std::cout << p16->data << " ";
+            p16 = p16->next;
+        }
+        std::cout << "]" << std::endl;
+    };
+
+    // Construct an unheaded list: {5, 4, 2, 1}
+    // Twin pairs: (5, 1) -> sum 6; (4, 2) -> sum 6; Max twin sum = 6
+    LNode *head16 = new LNode(5);
+    head16->next = new LNode(4);
+    head16->next->next = new LNode(2);
+    head16->next->next->next = new LNode(1);
+
+    std::cout << "List: ";
+    printListNoHead16(head16);
+
+    std::cout << "Maximum Twin Sum: " << PairSum(head16) << std::endl; // Expected: 6
+
+    // Construct another list: {1, 100, 3, 4}
+    // Twin pairs: (1, 4) -> sum 5; (100, 3) -> sum 103; Max twin sum = 103
+    LNode *head16_2 = new LNode(1);
+    head16_2->next = new LNode(100);
+    head16_2->next->next = new LNode(3);
+    head16_2->next->next->next = new LNode(4);
+
+    std::cout << "\nList 2: ";
+    printListNoHead16(head16_2);
+
+    std::cout << "Maximum Twin Sum: " << PairSum(head16_2) << std::endl; // Expected: 103
+
+    // Memory cleanup
+    while (head16 != nullptr) {
+        LNode *temp = head16;
+        head16 = head16->next;
+        delete temp;
+    }
+    while (head16_2 != nullptr) {
+        LNode *temp = head16_2;
+        head16_2 = head16_2->next;
+        delete temp;
+    }
+    
+    // Application Q17
+    std::cout << "===== Application Q17 =====" << std::endl;
+
+    SinglyLinkedList list17;
+    LinkList L17 = list17.GetHead();
+
+    // Populate List: [ 10, 20, 30, 40, 50 ]
+    list17.ListInsert(L17, 1, 10);
+    list17.ListInsert(L17, 2, 20);
+    list17.ListInsert(L17, 3, 30);
+    list17.ListInsert(L17, 4, 40);
+    list17.ListInsert(L17, 5, 50);
+
+    std::cout << "Original List: ";
+    list17.PrintList(); // Expected: [ 10 20 30 40 50 ]
+
+    // Test Case 1: Find 2nd node from end (Expected: 40, returns 1)
+    int k1 = 2;
+    std::cout << "Searching for k = " << k1 << ": " << std::endl;
+    int res1 = SearchkthToLast(L17, k1);
+    std::cout << "Return value: " << res1 << std::endl;
+
+    // Test Case 2: Find 5th node from end (Expected: 10, returns 1)
+    int k2 = 5;
+    std::cout << "\nSearching for k = " << k2 << ": " << std::endl;
+    int res2 = SearchkthToLast(L17, k2);
+    std::cout << "Return value: " << res2 << std::endl;
+
+    // Test Case 3: Out of bound k = 10 (Expected: returns 0)
+    int k3 = 10;
+    std::cout << "\nSearching for k = " << k3 << ": " << std::endl;
+    int res3 = SearchkthToLast(L17, k3);
+    std::cout << "Return value: " << res3 << std::endl;
+    
+    // Application Q18
+    std::cout << "===== Application Q18 =====" << std::endl;
+
+    // Construct common suffix nodes: 'i' -> 'n' -> 'g'
+    LNode *nodeG = new LNode('g');
+    LNode *nodeN = new LNode('n', nodeG);
+    LNode *nodeI = new LNode('i', nodeN); // Suffix start node
+
+    // Construct List 1 ("loading"): 'l' -> 'o' -> 'a' -> 'd' -> 'i' -> 'n' -> 'g'
+    SinglyLinkedList list18_1;
+    LinkList str1 = list18_1.GetHead();
+    LNode *nodeD = new LNode('d', nodeI);
+    LNode *nodeA = new LNode('a', nodeD);
+    LNode *nodeO = new LNode('o', nodeA);
+    LNode *nodeL = new LNode('l', nodeO);
+    str1->next = nodeL;
+
+    // Construct List 2 ("being"): 'b' -> 'e' -> 'i' -> 'n' -> 'g'
+    SinglyLinkedList list18_2;
+    LinkList str2 = list18_2.GetHead();
+    LNode *nodeE = new LNode('e', nodeI);
+    LNode *nodeB = new LNode('b', nodeE);
+    str2->next = nodeB;
+
+    // Find the shared suffix start
+    LNode *sharedStart = FindSharedSuffixStart(str1, str2);
+
+    if (sharedStart != nullptr) {
+        std::cout << "Shared suffix starts at node with data: " 
+                  << static_cast<char>(sharedStart->data) << std::endl; // Expected: 'i'
+    } else {
+        std::cout << "No shared suffix found." << std::endl;
+    }
+
+    // Memory cleanup
+    // Unlink shared nodes to allow independent list cleanup / avoiding double-free
+    nodeD->next = nullptr;
+    nodeE->next = nullptr;
+    while (nodeI != nullptr) {
+        LNode *temp = nodeI;
+        nodeI = nodeI->next;
+        delete temp;
+    }
+    
+    // Application Q19
+    std::cout << "===== Application Q19 =====" << std::endl;
+
+    SinglyLinkedList list19;
+    LinkList L19 = list19.GetHead();
+
+    // Max absolute value n = 25
+    int n19 = 25;
+
+    // Populate List: [ 21, -15, -15, 15, 7, -21 ]
+    list19.ListInsert(L19, 1, 21);
+    list19.ListInsert(L19, 2, -15);
+    list19.ListInsert(L19, 3, -15);
+    list19.ListInsert(L19, 4, 15);
+    list19.ListInsert(L19, 5, 7);
+    list19.ListInsert(L19, 6, -21);
+
+    std::cout << "Original List: ";
+    list19.PrintList(); // Expected: [ 21 -15 -15 15 7 -21 ]
+
+    DeleteAbsDuplicates(L19, n19);
+
+    std::cout << "After Removing Absolute Duplicates: ";
+    list19.PrintList(); // Expected: [ 21 -15 7 ]
+
+    // Application Q20
+    std::cout << "===== Application Q20 =====" << std::endl;
+
+    SinglyLinkedList list20;
+    LinkList L20 = list20.GetHead();
+
+    // Populate List with even number of nodes: [ 1, 2, 3, 4, 5, 6 ]
+    for (int i = 1; i <= 6; ++i) {
+        list20.ListInsert(L20, i, i);
+    }
+
+    std::cout << "Original List (Even): ";
+    list20.PrintList(); // Expected: [ 1 2 3 4 5 6 ]
+
+    ReorderList(L20);
+
+    std::cout << "Reordered List (Even):  ";
+    list20.PrintList(); // Expected: [ 1 6 2 5 3 4 ]
+
+    // Populate another list with odd number of nodes: [ 10, 20, 30, 40, 50 ]
+    SinglyLinkedList list20_odd;
+    LinkList L20_odd = list20_odd.GetHead();
+    for (int i = 1; i <= 5; ++i) {
+        list20_odd.ListInsert(L20_odd, i, i * 10);
+    }
+
+    std::cout << "\nOriginal List (Odd):  ";
+    list20_odd.PrintList(); // Expected: [ 10 20 30 40 50 ]
+
+    ReorderList(L20_odd);
+
+    std::cout << "Reordered List (Odd):   ";
+    list20_odd.PrintList(); // Expected: [ 10 50 20 40 30 ]
 
     return 0;
 }

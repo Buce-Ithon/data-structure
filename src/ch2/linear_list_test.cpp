@@ -9,6 +9,10 @@
 #include <climits>
 #include <algorithm>
 
+// Although using namespace is not so much "standard", but it's very sumbersome to change so much indentifers.
+// And the file itself is only for this chapter exercises and this would not influents other code files, so I choose namespace method to refactor code.
+using namespace LinearListStyle;
+
 /**
  * @brief Application Q1: Delete the element with the minimum value and fill its gap with the last element.
  * @param L Reference to the sequential list

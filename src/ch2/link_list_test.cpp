@@ -4,6 +4,10 @@
 #include <vector>
 #include <cmath>
 
+// Although using namespace is not so much "standard", but it's very sumbersome to change so much indentifers.
+// And the file itself is only for this chapter exercises and this would not influents other code files, so I choose namespace method to refactor code.
+using namespace LinkListStyle;
+
 // Alias common definition for readability
 using LinkList = SinglyLinkedList::LinkList;
 using LNode    = SinglyLinkedList::LNode;

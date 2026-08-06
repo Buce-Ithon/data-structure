@@ -7,7 +7,8 @@ namespace StackCStyle {
     // Define element type, modify as needed
     typedef int ElemType;
 
-#define MaxSize 128
+    // Replace the original `#define MaxSize 128` to prevent macros from polluting the global scope.
+    constexpr int MaxSize = 128;
 
     // ==================== 1. Data Structure Definitions ====================
 

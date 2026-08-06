@@ -63,6 +63,19 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+# ----------------------------------------------
+# [Optional] Import local GoogleTest source code
+# ----------------------------------------------
+# Run Bash command: git submodule add https://github.com/google/googletest.git third_party/googletest
+# Disable gtest installation rules to prevent pollution of build output
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+# If you don't need GoogleMock, you can turn it off to speed up compilation
+set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+
+# Add local gtest sources to the CMake build tree
+# EXCLUDE_FROM_ALL ensures that the examples and tests that come with gtest will not be compiled again during the full build.
+add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
+
 # ==========================================
 # 2. Automated scanning and building targets
 # ==========================================
@@ -102,6 +115,14 @@ foreach(source_file IN LISTS EXPERIMENT_SOURCES)
     
     # Automatically link common data structure libraries (ds_lib will automatically pass the include directory, no need to manually write target_include_directories)
     target_link_libraries("${target_name}" PRIVATE ds_lib)
+
+    # -----------------------------------------------------------------------------------------
+    # [Optional] If file name contains gtest or g_test, auto-link locally compiled gtest target
+    # -----------------------------------------------------------------------------------------
+    if(filename_we MATCHES "gtest|g_test")
+        # Direct links to gtest and gtest_main targets automatically created for add_subdirectory
+        target_link_libraries("${target_name}" PRIVATE gtest gtest_main)
+    endif()
 
     message(STATUS "Configured Target: ${target_name} <- src/${rel_path}")
 endforeach()

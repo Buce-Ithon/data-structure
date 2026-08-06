@@ -2,6 +2,7 @@
 #define STACK_CPP_H
 
 #include <new>
+#include <cstddef>
 
 namespace StackCppStyle{
     // ==================== 1. Abstract Base Interface ====================
@@ -92,6 +93,10 @@ namespace StackCppStyle{
         ~LiStack() override {
             clear();
         }
+        
+        // Explicitly disable copy constructors and assignment operators to prevent shallow copies from causing Double Free errors.
+        LiStack(const LiStack &) = delete;
+        LiStack &operator=(const LiStack &) = delete;
 
         // Check if the stack is empty
         bool isEmpty() const override {

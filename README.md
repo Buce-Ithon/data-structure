@@ -14,12 +14,17 @@ This repository is designed to manage and compile course experiments and exercis
 DataStructures/
 ├── CMakeLists.txt         # Core build configuration
 ├── CMakePresets.json      # Pre-configured build/configure environments
+├── .gitmodules            # Submodule tracking (GoogleTest)
 ├── .gitignore             # Git ignore rules
 ├── LICENSE                # Project license
 ├── README.md              # Project documentation
 ├── include/               # Public header files (.h / .hpp)
 │   ├── linear_list.h
-│   └── link_list.h
+│   ├── link_list.h
+│   ├── stack_c.h
+│   └── stack_cpp.h
+├── third_party/           # External dependencies
+│   └── googletest/        # GoogleTest framework repository (Submodule)
 ├── ref/                   # Reference materials, lecture notes, or PDFs
 └── src/                   # Source files organized by common implementations and chapters
     ├── common/            # Common data structure implementations (compiled into ds_lib)
@@ -27,15 +32,20 @@ DataStructures/
     │   └── link_list.cpp
     ├── ch1/               # Chapter 1 Exercises
     │   └── fibonacci_sequence.cpp
-    └── ch2/               # Chapter 2 Exercises
-        ├── linear_list_test.cpp
-        └── link_list_test.cpp
+    ├── ch2/               # Chapter 2 Exercises
+    │   ├── linear_list_test.cpp
+    │   └── link_list_test.cpp
+    └── ch3/               # Chapter 3 Exercises (Stacks & Queues)
+        ├── stack_headers_test.cpp
+        └── stack_headers_g_test.cpp (using GoogleTest)
 ```
 
 # Build commands
 Since this project utilizes CMake Presets, you can configure and build the project using the simplified preset names without manually specifying generators or build directories.
 
-## Prerequisites
+## Prerequisites & Getting Started
+
+1. Prerequisites
 Make sure you have CMake (3.15+) and at least one of the following toolchains installed and added to your system PATH:
 
 - Ninja + LLVM/Clang (Recommended for the fastest build speeds and excellent clangd compatibility)
@@ -43,6 +53,19 @@ Make sure you have CMake (3.15+) and at least one of the following toolchains in
 - MinGW (GCC)
 
 - MSVC (Visual Studio 2022)
+
+2. Cloning the Repository
+Because this repository uses GoogleTest as a Git Submodule, please clone the repository with the `--recursive` flag: 
+
+```bash
+git clone --recursive <repository-url>
+```
+
+If you have already cloned the repository without `--recursive`, initialize and pull the submodule by running: 
+
+```bash
+git submodule update --init --recursive
+```
 
 ## Building with Ninja (Recommended)
 Debug Mode (with debugging symbols):

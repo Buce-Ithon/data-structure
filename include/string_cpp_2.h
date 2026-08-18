@@ -14,7 +14,7 @@ namespace ModernString2 {
 
     static constexpr std::size_t npos = static_cast<std::size_t>(-1);
 
-    // 1. C++20 Concept: 统一两类字符串的属性要求
+    // 1. C++20 Concept: uniform requirements for both string types
     template <typename T>
     concept StringConcept = requires(const T& s) {
         { s.length() } -> std::same_as<std::size_t>;
@@ -23,7 +23,7 @@ namespace ModernString2 {
         { static_cast<std::string_view>(s) } -> std::same_as<std::string_view>;
     };
 
-    // 2. 静态顺序串类模板 (Stack Allocation)
+    // 2. Static sequential string class template (Stack Allocation)
     template <std::size_t N = 255>
     class StaticString {
     public:
@@ -54,7 +54,7 @@ namespace ModernString2 {
         std::size_t m_length;
     };
 
-    // 3. 动态堆内存串类 (Heap Allocation)
+    // 3. Dynamic heap-memory string class (Heap Allocation)
     class DynamicString {
     public:
         DynamicString() noexcept : m_data(nullptr), m_length(0) {}
@@ -84,15 +84,15 @@ namespace ModernString2 {
         std::size_t m_length;
     };
 
-    // 4. 通用模板泛型函数 (均支持 StaticString 与 DynamicString)
+    // 4. Generic template functions (support both StaticString and DynamicString)
 
-    // 泛型查找 (Index)
+    // Generic search (Index)
     template <StringConcept S1, StringConcept S2>
     std::size_t Index(const S1& str, const S2& target, std::size_t pos = 0) noexcept {
         return std::string_view(str).find(std::string_view(target), pos);
     }
 
-    // 泛型比较 (StrCompare)
+    // Generic comparison (StrCompare)
     template <StringConcept S1, StringConcept S2>
     int StrCompare(const S1& s1, const S2& s2) noexcept {
         std::string_view sv1(s1);
@@ -100,7 +100,7 @@ namespace ModernString2 {
         return sv1.compare(sv2);
     }
 
-    // 泛型截取 (SubString)
+    // Generic substring extraction (SubString)
     template <typename ResultString = DynamicString, StringConcept S>
     ResultString SubString(const S& src, std::size_t pos, std::size_t len = npos) {
         std::string_view sv(src);
@@ -108,7 +108,7 @@ namespace ModernString2 {
         return ResultString(sv.substr(pos, len));
     }
 
-    // 泛型拼接 (Concat)
+    // Generic concatenation (Concat)
     template <typename ResultString = DynamicString, StringConcept S1, StringConcept S2>
     ResultString Concat(const S1& s1, const S2& s2) {
         std::string_view sv1(s1);

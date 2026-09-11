@@ -380,6 +380,8 @@ ElemType FindMajorityElement(const SqList &A) {
         }
     }
 
+    std::cout << "candidate is: " << candidate << std::endl;
+
     // Phase 2: Candidate Verification
     int actualCount = 0;
     for (int i = 0; i < A.length; i++) {
@@ -724,6 +726,21 @@ int main() {
     std::cout << "List B3: "; PrintList(B3);
     std::cout << "Majority Element of B3: " << FindMajorityElement(B3) << std::endl; // Expected: -1
     
+    SqList C3;
+    InitList(C3);
+    ListInsert(C3, 1, 5);
+    ListInsert(C3, 2, 5);
+    ListInsert(C3, 3, 3);
+    ListInsert(C3, 4, 7);
+    ListInsert(C3, 5, 2);
+    ListInsert(C3, 6, 5);
+    ListInsert(C3, 7, 2);
+    ListInsert(C3, 8, 5);
+    ListInsert(C3, 9, 2);
+    ListInsert(C3, 10, 5);
+    ListInsert(C3, 11, 2);
+    std::cout << "List C3: "; PrintList(C3);
+    std::cout << "Majority Element of C3: " << FindMajorityElement(C3) << std::endl; // Expected: -1
     // Application Q13
     std::cout << "===== Application Q13 =====" << std::endl;
     SqList A4, B4;

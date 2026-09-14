@@ -125,6 +125,107 @@ void SwapSubtrees(BiTree T) {
     SwapSubtrees(T->rchild);
 }
 
+/**
+ * @brief Q5: Helper recursive function to locate the k-th node in pre-order traversal.
+ * 
+ * @param T Pointer to the root of the binary tree.
+ * @param k Target index (1-based).
+ * @param count Reference to current traversal step counter.
+ * @param val Reference to store node data when k-th node is located.
+ * @return true If the k-th node is found.
+ * @return false Otherwise.
+ */
+bool FindKthPreOrderHelper(BiTree T, int k, int &count, ElemType &val) {
+    if (T == nullptr) {
+        return false;
+    }
+    count++;
+    if (count == k) {
+        val = T->data;
+        return true;
+    }
+    if (FindKthPreOrderHelper(T->lchild, k, count, val)) {
+        return true;
+    }
+    return FindKthPreOrderHelper(T->rchild, k, count, val);
+}
+
+/**
+ * @brief Q5: Finds the value of the k-th node in the pre-order traversal sequence.
+ * 
+ * @param T Pointer to the root of the binary tree.
+ * @param k Target index (1 <= k <= total node count).
+ * @param val Reference to store the found node value.
+ * @return true If the k-th node exists and value is stored in val.
+ * @return false If k is out of range or tree is empty.
+ */
+bool GetKthPreOrder(BiTree T, int k, ElemType &val) {
+    int count = 0;
+    return FindKthPreOrderHelper(T, k, count, val);
+}
+
+/**
+ * @brief Q6: Deletes subtrees rooted at nodes with value x and frees allocated memory.
+ * 
+ * @param T Reference to the root pointer of the binary tree/subtree.
+ * @param x Target node value to match for deletion.
+ */
+void DeleteSubtreesByValue(BiTree &T, ElemType x) {
+    if (T == nullptr) {
+        return;
+    }
+    if (T->data == x) {
+        DestroyTree(T);
+        T = nullptr;
+        return;
+    }
+    DeleteSubtreesByValue(T->lchild, x);
+    DeleteSubtreesByValue(T->rchild, x);
+}
+
+/**
+ * @brief Q7: Searches for a node with target value x and prints all its ancestors.
+ * 
+ * @param T Pointer to the root of the binary tree.
+ * @param x Value of the target node.
+ * @return true If node with value x is found within subtree rooted at T.
+ * @return false Otherwise.
+ */
+bool PrintAncestors(BiTree T, ElemType x) {
+    if (T == nullptr) {
+        return false;
+    }
+    if (T->data == x) {
+        return true;
+    }
+    if (PrintAncestors(T->lchild, x) || PrintAncestors(T->rchild, x)) {
+        std::cout << T->data << " ";
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief Q8: Finds the Lowest Common Ancestor (LCA) node of two target nodes p and q.
+ * 
+ * @param T Pointer to the root of the binary tree.
+ * @param p Pointer to the first target node.
+ * @param q Pointer to the second target node.
+ * @return BiTree Pointer to the lowest common ancestor node, or nullptr if not found.
+ */
+BiTree FindLCA(BiTree T, BiTree p, BiTree q) {
+    if (T == nullptr || T == p || T == q) {
+        return T;
+    }
+    BiTree leftLCA = FindLCA(T->lchild, p, q);
+    BiTree rightLCA = FindLCA(T->rchild, p, q);
+
+    if (leftLCA != nullptr && rightLCA != nullptr) {
+        return T;
+    }
+    return (leftLCA != nullptr) ? leftLCA : rightLCA;
+}
+
 int main() {
     // Application Q1
     std::cout << "===== Application Q1 =====" << std::endl;
@@ -250,5 +351,118 @@ int main() {
 
     DestroyTree(tree4);
 
+    // Application Q5
+    std::cout << "===== Application Q5 =====" << std::endl;
+    /*
+     * Tree Q5 Structure:
+     *            1
+     *          /   \
+     *         2     3
+     *        / \
+     *       4   5
+     * Pre-Order sequence: 1, 2, 4, 5, 3
+     */
+    BiTree tree5 = CreateNode(1);
+    tree5->lchild = CreateNode(2);
+    tree5->rchild = CreateNode(3);
+    tree5->lchild->lchild = CreateNode(4);
+    tree5->lchild->rchild = CreateNode(5);
+
+    int targetK = 3;
+    ElemType kthVal;
+    if (GetKthPreOrder(tree5, targetK, kthVal)) {
+        std::cout << "The " << targetK << "-th node in Pre-Order traversal is: " << kthVal << std::endl;
+    } else {
+        std::cout << "Invalid k = " << targetK << std::endl;
+    }
+    DestroyTree(tree5);
+
+    // Application Q6
+    std::cout << "===== Application Q6 =====" << std::endl;
+    /*
+     * Tree Q6 Structure:
+     *            1
+     *          /   \
+     *         2     3
+     *        / \     \
+     *       4   5     6
+     * Target x = 2 (Delete subtree rooted at node 2)
+     */
+    BiTree tree6 = CreateNode(1);
+    tree6->lchild = CreateNode(2);
+    tree6->rchild = CreateNode(3);
+    tree6->lchild->lchild = CreateNode(4);
+    tree6->lchild->rchild = CreateNode(5);
+    tree6->rchild->rchild = CreateNode(6);
+
+    std::cout << "Pre-Order before deletion of x = 2: ";
+    PreOrder(tree6);
+    std::cout << std::endl;
+
+    DeleteSubtreesByValue(tree6, 2);
+
+    std::cout << "Pre-Order after deletion: ";
+    PreOrder(tree6);
+    std::cout << std::endl;
+    DestroyTree(tree6);
+
+    // Application Q7
+    std::cout << "===== Application Q7 =====" << std::endl;
+    /*
+     * Tree Q7 Structure:
+     *            10
+     *          /    \
+     *        20      30
+     *       /  \
+     *     40    50
+     * Target x = 50 -> Ancestors expected: 20, 10
+     */
+    BiTree tree7 = CreateNode(10);
+    tree7->lchild = CreateNode(20);
+    tree7->rchild = CreateNode(30);
+    tree7->lchild->lchild = CreateNode(40);
+    tree7->lchild->rchild = CreateNode(50);
+
+    ElemType targetX = 50;
+    std::cout << "Ancestors of node " << targetX << ": ";
+    if (!PrintAncestors(tree7, targetX)) {
+        std::cout << "Node not found.";
+    }
+    std::cout << std::endl;
+    DestroyTree(tree7);
+
+    // Application Q8
+    std::cout << "===== Application Q8 =====" << std::endl;
+    /*
+     * Tree Q8 Structure:
+     *            1
+     *          /   \
+     *         2     3
+     *        / \
+     *       4   5
+     * Nodes: p = 4, q = 5 -> LCA expected: 2
+     * Nodes: p = 4, q = 3 -> LCA expected: 1
+     */
+    BiTree tree8 = CreateNode(1);
+    tree8->lchild = CreateNode(2);
+    tree8->rchild = CreateNode(3);
+    tree8->lchild->lchild = CreateNode(4);
+    tree8->lchild->rchild = CreateNode(5);
+
+    BiTree pNode = tree8->lchild->lchild; // Node 4
+    BiTree qNode = tree8->lchild->rchild; // Node 5
+
+    BiTree lca1 = FindLCA(tree8, pNode, qNode);
+    if (lca1 != nullptr) {
+        std::cout << "LCA of " << pNode->data << " and " << qNode->data << " is: " << lca1->data << std::endl;
+    }
+
+    BiTree qNode2 = tree8->rchild; // Node 3
+    BiTree lca2 = FindLCA(tree8, pNode, qNode2);
+    if (lca2 != nullptr) {
+        std::cout << "LCA of " << pNode->data << " and " << qNode2->data << " is: " << lca2->data << std::endl;
+    }
+
+    DestroyTree(tree8);
     return 0;
 }

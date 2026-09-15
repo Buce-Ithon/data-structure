@@ -226,6 +226,141 @@ BiTree FindLCA(BiTree T, BiTree p, BiTree q) {
     return (leftLCA != nullptr) ? leftLCA : rightLCA;
 }
 
+/**
+ * @brief Q9: Calculates the width of a non-empty binary tree (maximum number of nodes at any single level).
+ * 
+ * @param T Pointer to the root of the binary tree.
+ * @return int The maximum width of the binary tree.
+ */
+int GetTreeWidth(BiTree T) {
+    if (T == nullptr) {
+        return 0;
+    }
+
+    std::queue<BiTree> q;
+    q.push(T);
+    int maxWidth = 0;
+
+    while (!q.empty()) {
+        int levelSize = static_cast<int>(q.size());
+        maxWidth = std::max(maxWidth, levelSize);
+
+        for (int i = 0; i < levelSize; ++i) {
+            BiTree node = q.front();
+            q.pop();
+
+            if (node->lchild != nullptr) {
+                q.push(node->lchild);
+            }
+            if (node->rchild != nullptr) {
+                q.push(node->rchild);
+            }
+        }
+    }
+
+    return maxWidth;
+}
+
+/**
+ * @brief Q10: Recursive helper to convert a pre-order sequence of a full binary tree into a post-order sequence.
+ * 
+ * @param pre Pre-order sequence array.
+ * @param l1 Start index of pre-order range.
+ * @param r1 End index of pre-order range.
+ * @param post Target post-order sequence array.
+ * @param l2 Start index of post-order range.
+ * @param r2 End index of post-order range.
+ */
+void PreToPostFullHelper(const ElemType pre[], int l1, int r1, ElemType post[], int l2, int r2) {
+    if (l1 > r1) {
+        return;
+    }
+
+    // Root of current subtree goes to the end of post-order range
+    post[r2] = pre[l1];
+
+    int half = (r1 - l1) / 2;
+    // Process left subtree
+    PreToPostFullHelper(pre, l1 + 1, l1 + half, post, l2, l2 + half - 1);
+    // Process right subtree
+    PreToPostFullHelper(pre, l1 + half + 1, r1, post, l2 + half, r2 - 1);
+}
+
+/**
+ * @brief Q10: Computes post-order sequence from pre-order sequence for a full binary tree.
+ * 
+ * @param pre Pre-order sequence array.
+ * @param n Total number of nodes in the full binary tree.
+ * @param post Array to hold the resulting post-order sequence.
+ */
+void PreToPostFull(const ElemType pre[], int n, ElemType post[]) {
+    if (n <= 0) return;
+    PreToPostFullHelper(pre, 0, n - 1, post, 0, n - 1);
+}
+
+/**
+ * @brief Q11: Recursive helper to traverse tree and link leaf nodes into a singly linked list.
+ * 
+ * @param T Pointer to current node.
+ * @param head Reference to head pointer of the leaf list.
+ * @param tail Reference to tail pointer of the leaf list.
+ */
+void LinkLeafNodesHelper(BiTree T, BiTree &head, BiTree &tail) {
+    if (T == nullptr) {
+        return;
+    }
+
+    // Check if node is a leaf node
+    if (T->lchild == nullptr && T->rchild == nullptr) {
+        if (head == nullptr) {
+            head = T;
+            tail = T;
+        } else {
+            tail->rchild = T; // Store link in right child field
+            tail = T;
+        }
+        return;
+    }
+
+    LinkLeafNodesHelper(T->lchild, head, tail);
+    LinkLeafNodesHelper(T->rchild, head, tail);
+}
+
+/**
+ * @brief Q11: Links all leaf nodes of a binary tree from left to right into a singly linked list using rchild pointers.
+ * 
+ * @param T Pointer to the root of the binary tree.
+ * @return BiTree Head pointer of the leaf node linked list.
+ */
+BiTree LinkLeafNodes(BiTree T) {
+    BiTree head = nullptr;
+    BiTree tail = nullptr;
+    LinkLeafNodesHelper(T, head, tail);
+    
+    if (tail != nullptr) {
+        tail->rchild = nullptr; // Terminate linked list
+    }
+    return head;
+}
+
+/**
+ * @brief Q12: Checks whether two binary trees T1 and T2 are structurally similar.
+ * 
+ * @param T1 Pointer to root of the first binary tree.
+ * @param T2 Pointer to root of the second binary tree.
+ * @return true If T1 and T2 are structurally similar.
+ * @return false Otherwise.
+ */
+bool IsSimilar(BiTree T1, BiTree T2) {
+    if (T1 == nullptr && T2 == nullptr) {
+        return true;
+    }
+    if (T1 == nullptr || T2 == nullptr) {
+        return false;
+    }
+    return IsSimilar(T1->lchild, T2->lchild) && IsSimilar(T1->rchild, T2->rchild);
+}
+
 int main() {
     // Application Q1
     std::cout << "===== Application Q1 =====" << std::endl;
@@ -464,5 +599,122 @@ int main() {
     }
 
     DestroyTree(tree8);
+    
+    // Application Q9
+    std::cout << "===== Application Q9 =====" << std::endl;
+    /*
+     * Tree Q9 Structure:
+     *            1           (Level 1: 1 node)
+     *          /   \
+     *         2     3         (Level 2: 2 nodes)
+     *        / \     \
+     *       4   5     6       (Level 3: 3 nodes - Max Width)
+     *            \
+     *             7          (Level 4: 1 node)
+     */
+    BiTree tree9 = CreateNode(1);
+    tree9->lchild = CreateNode(2);
+    tree9->rchild = CreateNode(3);
+    tree9->lchild->lchild = CreateNode(4);
+    tree9->lchild->rchild = CreateNode(5);
+    tree9->rchild->rchild = CreateNode(6);
+    tree9->lchild->rchild->rchild = CreateNode(7);
+
+    std::cout << "Width of tree: " << GetTreeWidth(tree9) << std::endl;
+    DestroyTree(tree9);
+
+    // Application Q10
+    std::cout << "===== Application Q10 =====" << std::endl;
+    /*
+     * Full Binary Tree (7 nodes):
+     *            1
+     *          /   \
+     *         2     3
+     *        / \   / \
+     *       4   5 6   7
+     * 
+     * Pre-Order:  1, 2, 4, 5, 3, 6, 7
+     * Post-Order: 4, 5, 2, 6, 7, 3, 1
+     */
+    ElemType pre[] = {1, 2, 4, 5, 3, 6, 7};
+    int n = sizeof(pre) / sizeof(pre[0]);
+    ElemType post[7];
+
+    PreToPostFull(pre, n, post);
+
+    std::cout << "Pre-Order:  ";
+    for (int i = 0; i < n; ++i) std::cout << pre[i] << " ";
+    std::cout << std::endl;
+
+    std::cout << "Post-Order: ";
+    for (int i = 0; i < n; ++i) std::cout << post[i] << " ";
+    std::cout << std::endl;
+
+    // Application Q11
+    std::cout << "===== Application Q11 =====" << std::endl;
+    /*
+     * Tree Q11 Structure:
+     *            10
+     *          /    \
+     *        20      30
+     *       /  \       \
+     *     40    50      60
+     * Leaves from left to right: 40, 50, 60
+     */
+    BiTree tree11 = CreateNode(10);
+    tree11->lchild = CreateNode(20);
+    tree11->rchild = CreateNode(30);
+    tree11->lchild->lchild = CreateNode(40);
+    tree11->lchild->rchild = CreateNode(50);
+    tree11->rchild->rchild = CreateNode(60);
+
+    BiTree head = LinkLeafNodes(tree11);
+
+    std::cout << "Leaf nodes linked list: ";
+    for (BiTree p = head; p != nullptr; p = p->rchild) {
+        std::cout << p->data << " ";
+    }
+    std::cout << std::endl;
+
+    // Clean up nodes for tree11
+    delete tree11->lchild->lchild;
+    delete tree11->lchild->rchild;
+    delete tree11->lchild;
+    delete tree11->rchild->rchild;
+    delete tree11->rchild;
+    delete tree11;
+
+    // Application Q12
+    std::cout << "===== Application Q12 =====" << std::endl;
+    /*
+     * Tree Q12-A:      Tree Q12-B (Similar):     Tree Q12-C (Not Similar):
+     *      1                    10                       100
+     *     / \                  /  \                     /
+     *    2   3                20  30                   200
+     *   /                    /                        /
+     *  4                    40                       300
+     */
+    BiTree tree12A = CreateNode(1);
+    tree12A->lchild = CreateNode(2);
+    tree12A->rchild = CreateNode(3);
+    tree12A->lchild->lchild = CreateNode(4);
+
+    BiTree tree12B = CreateNode(10);
+    tree12B->lchild = CreateNode(20);
+    tree12B->rchild = CreateNode(30);
+    tree12B->lchild->lchild = CreateNode(40);
+
+    BiTree tree12C = CreateNode(100);
+    tree12C->lchild = CreateNode(200);
+    tree12C->lchild->lchild = CreateNode(300);
+
+    std::cout << "Are Tree 12A and Tree 12B Similar? " << (IsSimilar(tree12A, tree12B) ? "Yes" : "No") << std::endl;
+    std::cout << "Are Tree 12A and Tree 12C Similar? " << (IsSimilar(tree12A, tree12C) ? "Yes" : "No") << std::endl;
+    std::cout << "Are Tree 12B and Tree 12C Similar? " << (IsSimilar(tree12B, tree12C) ? "Yes" : "No") << std::endl;
+
+    DestroyTree(tree12A);
+    DestroyTree(tree12B);
+    DestroyTree(tree12C);
+
     return 0;
 }

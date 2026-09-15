@@ -361,6 +361,146 @@ bool IsSimilar(BiTree T1, BiTree T2) {
     return IsSimilar(T1->lchild, T2->lchild) && IsSimilar(T1->rchild, T2->rchild);
 }
 
+/**
+ * @brief Q13: Recursive helper to calculate Weighted Path Length (WPL) of a binary tree.
+ * 
+ * @param T Pointer to current node.
+ * @param depth Current depth of the node (root depth is 0).
+ * @return int Accumulated WPL for the subtree rooted at T.
+ */
+int GetWPLHelper(BiTree T, int depth) {
+    if (T == nullptr) {
+        return 0;
+    }
+    // Leaf node: weight (data) * depth
+    if (T->lchild == nullptr && T->rchild == nullptr) {
+        return T->data * depth;
+    }
+    return GetWPLHelper(T->lchild, depth + 1) + GetWPLHelper(T->rchild, depth + 1);
+}
+
+/**
+ * @brief Q13: Calculates the Weighted Path Length (WPL) of a binary tree.
+ * 
+ * @param T Pointer to the root of the binary tree.
+ * @return int Total WPL of the tree.
+ */
+int GetWPL(BiTree T) {
+    return GetWPLHelper(T, 0);
+}
+
+
+// Structure definition for Q14
+typedef struct node {
+    char data[10];
+    struct node *left, *right;
+} BTree;
+
+/**
+ * @brief Q14: Helper to create a new BTree node for an expression tree.
+ * 
+ * @param val String value for node data.
+ * @return BTree* Pointer to newly allocated node.
+ */
+BTree* CreateBNode(const char* val) {
+    BTree* n = new BTree();
+    snprintf(n->data, sizeof(n->data), "%s", val);
+    n->left = nullptr;
+    n->right = nullptr;
+    return n;
+}
+
+/**
+ * @brief Q14: Converts an expression tree into an equivalent infix expression with parentheses.
+ * 
+ * @param T Pointer to the root of the expression tree.
+ * @param depth Current recursion depth (root starts at depth 1).
+ */
+void BTreeToInfix(BTree *T, int depth = 1) {
+    if (T == nullptr) {
+        return;
+    }
+    // Leaf node (operand)
+    if (T->left == nullptr && T->right == nullptr) {
+        std::cout << T->data;
+    } else {
+        // Operator node: add parentheses for sub-expressions (non-root level)
+        if (depth > 1) {
+            std::cout << "(";
+        }
+        BTreeToInfix(T->left, depth + 1);
+        std::cout << T->data;
+        BTreeToInfix(T->right, depth + 1);
+        if (depth > 1) {
+            std::cout << ")";
+        }
+    }
+}
+
+/**
+ * @brief Q14: Helper to recursively free memory of a BTree expression tree.
+ * 
+ * @param T Pointer to the root node.
+ */
+void DestroyBTree(BTree *T) {
+    if (T == nullptr) return;
+    DestroyBTree(T->left);
+    DestroyBTree(T->right);
+    delete T;
+}
+
+
+// Structure definition for Q15
+#ifndef MAX_SIZE
+#define MAX_SIZE 100
+#endif
+
+typedef struct {
+    int SqBiTNode[MAX_SIZE]; // Array holding binary tree node values
+    int ElemNum;             // Actual number of array elements used
+} SqBiTree;
+
+/**
+ * @brief Q15: Helper to verify if a sequentially stored tree is a BST via in-order traversal.
+ * 
+ * @param T Reference to the sequentially stored binary tree structure.
+ * @param index Current node index in 0-based array indexing.
+ * @param preVal Reference to value of previously visited node in in-order sequence.
+ * @return true If the subtree is a valid Binary Search Tree.
+ * @return false Otherwise.
+ */
+bool IsBSTSqHelper(const SqBiTree &T, int index, int &preVal) {
+    if (index >= T.ElemNum || T.SqBiTNode[index] == -1) {
+        return true;
+    }
+
+    // Process left child: 2 * index + 1
+    if (!IsBSTSqHelper(T, 2 * index + 1, preVal)) {
+        return false;
+    }
+
+    // In-order value check: current value must be strictly greater than previous value
+    if (T.SqBiTNode[index] <= preVal) {
+        return false;
+    }
+    preVal = T.SqBiTNode[index];
+
+    // Process right child: 2 * index + 2
+    return IsBSTSqHelper(T, 2 * index + 2, preVal);
+}
+
+/**
+ * @brief Q15: Determines if a sequentially stored binary tree is a Binary Search Tree (BST).
+ * 
+ * @param T Reference to the SqBiTree structure.
+ * @return true If the tree is a valid BST.
+ * @return false Otherwise.
+ */
+bool IsBSTSq(const SqBiTree &T) {
+    int preVal = -1; // Node values are positive integers, -1 is smaller than any valid node
+    return IsBSTSqHelper(T, 0, preVal);
+}
+
 int main() {
     // Application Q1
     std::cout << "===== Application Q1 =====" << std::endl;
@@ -715,6 +855,69 @@ int main() {
     DestroyTree(tree12A);
     DestroyTree(tree12B);
     DestroyTree(tree12C);
+
+    // Application Q13
+    std::cout << "===== Application Q13 =====" << std::endl;
+    /*
+     * Tree Q13 Structure (Leaf values act as weights):
+     *            0
+     *          /   \
+     *         0     3  (Weight: 3, Depth: 1 -> 3 * 1 = 3)
+     *        / \
+     *       4   5      (Weight: 4, Depth: 2 -> 4 * 2 = 8; Weight: 5, Depth: 2 -> 5 * 2 = 10)
+     * 
+     * Expected WPL = 3 + 8 + 10 = 21
+     */
+    BiTree tree13 = CreateNode(0);
+    tree13->lchild = CreateNode(0);
+    tree13->rchild = CreateNode(3);
+    tree13->lchild->lchild = CreateNode(4);
+    tree13->lchild->rchild = CreateNode(5);
+
+    std::cout << "Weighted Path Length (WPL): " << GetWPL(tree13) << std::endl;
+    DestroyTree(tree13);
+
+    // Application Q14
+    std::cout << "===== Application Q14 =====" << std::endl;
+    /*
+     * Expression Tree Q14:
+     *            *
+     *          /   \
+     *         +     -
+     *        / \   / \
+     *       a   b c   d
+     * 
+     * Expected Output: (a+b)*(c-d)
+     */
+    BTree *tree14 = CreateBNode("*");
+    tree14->left = CreateBNode("+");
+    tree14->right = CreateBNode("-");
+    tree14->left->left = CreateBNode("a");
+    tree14->left->right = CreateBNode("b");
+    tree14->right->left = CreateBNode("c");
+    tree14->right->right = CreateBNode("d");
+
+    std::cout << "Infix Expression: ";
+    BTreeToInfix(tree14);
+    std::cout << std::endl;
+    DestroyBTree(tree14);
+
+    // Application Q15
+    std::cout << "===== Application Q15 =====" << std::endl;
+    /*
+     * Tree Q15-A (Valid BST):
+     * Array: [5, 3, 8, 2, 4, 7, 9]
+     * In-order sequence: 2, 3, 4, 5, 7, 8, 9 (Strictly Increasing)
+     *
+     * Tree Q15-B (Invalid BST):
+     * Array: [5, 3, 8, 2, 6, -1, -1]
+     * Left child of 3 is 2, right child of 3 is 6 (6 > 5 causes violation for root 5)
+     */
+    SqBiTree tree15A = {{5, 3, 8, 2, 4, 7, 9}, 7};
+    SqBiTree tree15B = {{5, 3, 8, 2, 6, -1, -1}, 7};
+
+    std::cout << "Is Tree 15A a valid BST? " << (IsBSTSq(tree15A) ? "Yes" : "No") << std::endl;
+    std::cout << "Is Tree 15B a valid BST? " << (IsBSTSq(tree15B) ? "Yes" : "No") << std::endl;
 
     return 0;
 }
